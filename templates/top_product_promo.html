@@ -1,0 +1,128 @@
+<!-- templates/top_product_promo.html -->
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<style>
+:root {
+  --promo-card-bg: #0b1220;
+  --promo-card-glow: linear-gradient(135deg, rgba(236,72,153,0.35), rgba(249,115,22,0.25));
+}
+.promo-stage {
+  background: radial-gradient(circle at top, #220f2b, #050206);
+  padding: 32px 20px 60px;
+  border-radius: 28px;
+  box-shadow: 0 35px 80px rgba(3,7,18,.65);
+}
+.promo-stage h1 { color:#fce7f3; font-weight:800; letter-spacing:-.4px; margin-bottom:6px; }
+.promo-stage p { color:#fecdd3; margin-bottom:24px; }
+.promo-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(310px,1fr));
+  gap:22px;
+}
+.promo-card {
+  border-radius:20px;
+  background: var(--promo-card-bg);
+  border:1px solid rgba(255,255,255,.08);
+  position:relative;
+  overflow:hidden;
+  transition:transform .35s ease, box-shadow .35s ease;
+}
+.promo-card::before {
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:var(--promo-card-glow);
+  opacity:0;
+  transition:opacity .35s ease;
+  filter:blur(12px);
+}
+.promo-card:hover { transform:translateY(-6px) scale(1.01); box-shadow:0 25px 50px rgba(0,0,0,.45); }
+.promo-card:hover::before { opacity:1; }
+.card-inner { position:relative; z-index:1; }
+.promo-img { height:210px; background:rgba(255,255,255,.05); display:flex; align-items:center; justify-content:center; position:relative; }
+.promo-img img { max-height:100%; max-width:100%; object-fit:contain; padding:18px; filter:drop-shadow(0 12px 18px rgba(0,0,0,.55)); }
+.product-body { padding:20px 20px 0; color:#ffe4e6; }
+.rank-badge { width:30px; height:30px; border-radius:50%; background:rgba(236,72,153,.85); display:inline-flex; align-items:center; justify-content:center; font-weight:700; margin-right:10px; }
+.product-name { font-size:1.2rem; font-weight:700; }
+.stat-row { display:flex; justify-content:space-between; margin:14px 0 18px; }
+.stat-box { flex:1; text-align:center; }
+.stat-label { text-transform:uppercase; font-size:.7rem; letter-spacing:.4px; color:#fecdd3; }
+.stat-value { font-size:1rem; font-weight:700; color:#fb7185; }
+.section-label { font-size:.75rem; color:#fda4af; text-transform:uppercase; letter-spacing:.4px; margin-top:10px; }
+.section-text { font-size:.95rem; color:#ffe4e6; margin-bottom:6px; }
+.insight-box { background:rgba(15,23,42,.6); border:1px solid rgba(239,68,68,.25); border-radius:14px; padding:12px 14px; }
+.strategy-box { background:rgba(76,29,149,.5); border:1px solid rgba(217,70,239,.3); border-radius:14px; padding:12px 14px; }
+.promo-badge { position:absolute; top:14px; left:14px; padding:6px 10px; font-size:.75rem; font-weight:700; border-radius:999px; background:rgba(251,113,133,.9); color:#fff; letter-spacing:.08em; }
+.forecast-panel { margin-top:12px; background:rgba(24,16,35,.82); border:1px solid rgba(253,164,175,.25); border-radius:16px; padding:14px 16px 16px; }
+.forecast-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px; }
+.forecast-cell { background:rgba(15,23,42,.92); border-radius:12px; padding:10px 12px; border:1px solid rgba(248,113,113,.25); text-align:center; }
+.forecast-label { font-size:.7rem; text-transform:uppercase; color:#fecdd3; letter-spacing:.08em; }
+.forecast-value { font-size:1.1rem; font-weight:700; color:#fbbf24; margin-top:4px; }
+.notes-box { margin-top:12px; background:rgba(76,29,149,.4); border:1px solid rgba(217,70,239,.35); border-radius:14px; padding:12px 14px; color:#f3e8ff; }
+</style>
+
+<section class="promo-stage">
+  <h1>Top Product — Promo</h1>
+  <p>Promo-ready assortment with forecasted demand and campaign notes.</p>
+
+  {% if rows %}
+  <div class="promo-grid">
+    {% for row in rows %}
+    <article class="promo-card">
+      <div class="card-inner">
+        <div class="promo-img">
+          {% if row.Campaign or row.Promo_Tag %}
+            <div class="promo-badge">{{ row.Campaign or row.Promo_Tag }}</div>
+          {% endif %}
+          {% if row.Image_URL and row.Image_URL != "Placeholder" and row.Image_URL|length > 5 %}
+            <img src="{{ row.Image_URL }}" alt="{{ row.Product }}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1527004013197-933c4bb611b3?auto=format&fit=crop&w=600&q=60';">
+          {% else %}
+            <img src="https://images.unsplash.com/photo-1527004013197-933c4bb611b3?auto=format&fit=crop&w=600&q=60" alt="product" loading="lazy">
+          {% endif %}
+        </div>
+        <div class="product-body">
+          <div class="d-flex align-items-center">
+            <span class="rank-badge">{{ row.No }}</span>
+            <div class="product-name">{{ row.Product }}</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-box">
+              <div class="stat-label">Sold Qty</div>
+              <div class="stat-value">{{ "{:,.0f}".format(row.Current_Qty) if row.Current_Qty else "–" }}</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Sales (MMK)</div>
+              <div class="stat-value" style="color:#f472b6;">{{ "{:,.0f}".format(row.Sale_Total) if row.Sale_Total else "–" }}</div>
+            </div>
+          </div>
+          <div class="section-label">Insight</div>
+          <div class="section-text insight-box">{{ row.Insight or 'No insight shared' }}</div>
+          <div class="section-label">Strategy</div>
+          <div class="section-text strategy-box">{{ row.Strategy_Focus or 'Upcoming strategy TBD' }}</div>
+          <div class="section-label">2026-Forecast</div>
+          <div class="forecast-panel">
+            <div class="forecast-grid">
+              {% for q in ['Q1_Forecast', 'Q2_Forecast', 'Q3_Forecast', 'Q4_Forecast'] %}
+              <div class="forecast-cell">
+                <div class="forecast-label">{{ q[0:2] }}</div>
+                <div class="forecast-value">{{ "{:,.0f}".format(row[q]) if row[q] else "–" }}</div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% if row.Forecast_Notes %}
+          <div class="section-label">Campaign Notes</div>
+          <div class="notes-box">{{ row.Forecast_Notes }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="alert alert-warning">No promo product data available.</div>
+  {% endif %}
+</section>
+
+{% endblock %}

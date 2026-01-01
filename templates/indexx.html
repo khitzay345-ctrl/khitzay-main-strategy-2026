@@ -1,0 +1,2849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Management & Looker Studio Fundamentals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --accent: #4f46e5;
+      --accent-2: #10b981;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --card: rgba(255, 255, 255, 0.9);
+      --stroke: rgba(79, 70, 229, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, rgba(79, 70, 229, 0.15), transparent 55%),
+                  radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.18), transparent 45%),
+                  radial-gradient(circle at 80% 0, rgba(59, 130, 246, 0.18), transparent 55%),
+                  var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.7;
+      font-size: 19.5px;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      height: 0.8in;
+      padding: 0 0.2in;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border-bottom: 1px solid var(--stroke);
+      overflow: hidden;
+      background: linear-gradient(135deg, #ffffff 0%, #eef2ff 35%, #f0fdf4 100%);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .pulse-circle {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(93, 242, 193, 0.2), transparent 60%);
+      animation: pulse 8s infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); opacity: 0.5; }
+      to { transform: scale(1.35); opacity: 1; }
+    }
+
+    .instructor {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .instructor img {
+      width: 0.5in;
+      height: 0.5in;
+      border-radius: 0.15in;
+      object-fit: cover;
+      object-position: center top;
+      border: 2px solid rgba(79, 70, 229, 0.6);
+      box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
+      animation: float 5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .headline h1 {
+      margin: 0;
+      font-size: clamp(1.12rem, 2.5vw, 1.6rem);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #312e81;
+    }
+
+    main {
+      position: relative;
+      min-height: 100vh;
+      padding-bottom: 3rem;
+    }
+
+    .page {
+      padding: clamp(1.5rem, 4vw, 3rem);
+      border: 1px solid rgba(79, 70, 229, 0.15);
+      border-radius: 2rem;
+      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+      min-height: 70vh;
+      height: calc(100vh - 7.5rem);
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+      opacity: 0;
+      transform: translateY(35px) scale(0.98);
+      filter: blur(8px);
+      box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+      transition: opacity 0.75s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  filter 0.75s cubic-bezier(0.2, 0.8, 0.2, 1);
+      pointer-events: none;
+      color: #111827;
+      overflow-y: auto;
+    }
+
+    .page.active {
+      display: flex;
+    }
+
+    .page.fade-in {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0px);
+      pointer-events: auto;
+    }
+
+    .page.fade-out {
+      opacity: 0;
+      transform: translateY(-25px) scale(0.985);
+      filter: blur(5px);
+    }
+
+    h2 {
+      font-size: clamp(2.75rem, 3vw, 2.5rem);
+      margin: 0;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #312e81;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .data-overview-section {
+      position: relative;
+      border-radius: 2rem;
+      padding: 2.5rem;
+      background: radial-gradient(circle at top left, rgba(76, 29, 149, 0.12), rgba(59, 130, 246, 0.08)),
+                  radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 50%),
+                  #f8fafc;
+      border: 1px solid rgba(79, 70, 229, 0.15);
+      overflow: hidden;
+    }
+
+    .data-type-section {
+      position: relative;
+      border-radius: 2rem;
+      padding: clamp(2rem, 4vw, 3rem);
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      background: radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.15), transparent 50%),
+                  radial-gradient(circle at 80% 0, rgba(99, 102, 241, 0.12), transparent 55%),
+                  #f8fafc;
+      overflow: hidden;
+    }
+
+    .data-type-section::before,
+    .data-type-section::after {
+      content: '';
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .data-type-section::before {
+      top: -60px;
+      right: -40px;
+      background: rgba(59, 130, 246, 0.35);
+    }
+
+    .data-type-section::after {
+      bottom: -40px;
+      left: -20px;
+      background: rgba(14, 165, 233, 0.35);
+    }
+
+    .data-type-header {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-bottom: 2rem;
+    }
+
+    .data-type-header small {
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      color: #0ea5e9;
+      font-weight: 600;
+    }
+
+    .data-type-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .type-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(14, 165, 233, 0.25);
+      padding: 1.5rem;
+      box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .type-card[data-feature="true"] {
+      background: linear-gradient(145deg, rgba(14, 165, 233, 0.16), rgba(99, 102, 241, 0.12));
+      border: 1.5px solid rgba(14, 165, 233, 0.35);
+    }
+
+    .type-card h3 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: 0.08em;
+      color: #0f172a;
+    }
+
+    .type-card ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .type-card code {
+      background: rgba(15, 23, 42, 0.05);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .type-insights {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .type-insights span {
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.15);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #0369a1;
+      background: rgba(191, 219, 254, 0.6);
+    }
+
+    .type-highlight {
+      display: grid;
+      gap: 0.4rem;
+      font-size: 0.95rem;
+      color: #0f172a;
+    }
+
+    .type-highlight strong {
+      color: #0f766e;
+      letter-spacing: 0.05em;
+    }
+
+    .data-overview-section::before,
+    .data-overview-section::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.4;
+    }
+
+    .data-overview-section::before {
+      width: 360px;
+      height: 360px;
+      background: rgba(59, 130, 246, 0.2);
+      top: -120px;
+      right: -80px;
+    }
+
+    .data-overview-section::after {
+      width: 240px;
+      height: 240px;
+      background: rgba(16, 185, 129, 0.25);
+      bottom: -60px;
+      left: -40px;
+    }
+
+    .data-overview-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .data-overview-header small {
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      color: #4c1d95;
+      font-weight: 600;
+    }
+
+    .data-overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.8rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .context-card h3 {
+      font-size: 1.6rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+
+    .context-card p,
+    .context-card ul {
+      color: #1e293b;
+      font-size: 1rem;
+    }
+
+    .context-card ul {
+      padding-left: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .context-card ul li {
+      list-style: none;
+      position: relative;
+      padding-left: 1.2rem;
+    }
+
+    .context-card ul li::before {
+      content: '';
+      position: absolute;
+      top: 0.5rem;
+      left: 0;
+      width: 0.4rem;
+      height: 0.4rem;
+      border-radius: 50%;
+      background: linear-gradient(120deg, #4f46e5, #10b981);
+    }
+
+    .context-insights {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    .context-insights span {
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(15, 23, 42, 0.05);
+      color: #0f172a;
+      border: 1px solid rgba(79, 70, 229, 0.2);
+    }
+
+    .context-visual {
+      margin-top: 0.5rem;
+    }
+
+    .context-card[data-feature="true"] {
+      grid-column: span 2;
+      background: linear-gradient(135deg, rgba(49, 46, 129, 0.15), rgba(16, 185, 129, 0.1));
+      border: 1.5px solid rgba(49, 46, 129, 0.25);
+    }
+
+    @media (max-width: 900px) {
+      .context-card[data-feature="true"] {
+        grid-column: span 1;
+      }
+
+      .data-overview-section {
+        padding: 1.5rem;
+      }
+    }
+
+    .data-journey-shell {
+      position: relative;
+      padding: clamp(2rem, 4vw, 3rem);
+      border-radius: 2rem;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      background: radial-gradient(circle at 15% 15%, rgba(79, 70, 229, 0.08), transparent 50%),
+                  radial-gradient(circle at 85% 20%, rgba(16, 185, 129, 0.12), transparent 45%),
+                  #f8fafc;
+      overflow: hidden;
+    }
+
+    .data-journey-shell::before,
+    .data-journey-shell::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.4;
+      filter: blur(60px);
+      pointer-events: none;
+    }
+
+    .data-journey-shell::before {
+      background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.35), transparent 65%);
+    }
+
+    .data-journey-shell::after {
+      background: radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.25), transparent 60%);
+    }
+
+    .data-journey-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-bottom: 1.75rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .data-journey-header small {
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      color: #0f766e;
+      font-weight: 600;
+    }
+
+    .data-journey-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.75rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .flow-card ul {
+      margin: 1rem 0 0;
+      padding: 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .flow-card ul li {
+      list-style: none;
+      padding: 0.65rem 0.85rem;
+      background: rgba(15, 23, 42, 0.03);
+      border-radius: 0.85rem;
+      border: 1px solid rgba(79, 70, 229, 0.15);
+    }
+
+    .data-visual-card {
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+
+    .data-visual-card figure {
+      margin: 0;
+      border-radius: 1.25rem;
+      overflow: hidden;
+      position: relative;
+      min-height: 260px;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+    }
+
+    .data-visual-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .data-visual-card figcaption {
+      position: absolute;
+      inset: auto 1rem 1rem;
+      background: rgba(15, 23, 42, 0.8);
+      color: #f8fafc;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      letter-spacing: 0.18em;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .data-visual-caption {
+      margin: 0.8rem 0 0;
+      font-size: 0.95rem;
+      color: #0f172a;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .platform-card {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .platform-visual {
+      border-radius: 1rem;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      min-height: 220px;
+      background: #0f172a;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .platform-visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.8), transparent 60%);
+      pointer-events: none;
+    }
+
+    .platform-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .platform-visual span {
+      position: absolute;
+      bottom: 0.9rem;
+      left: 1rem;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #f1f5f9;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+
+    .platform-points {
+      display: grid;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .platform-points li {
+      list-style: none;
+      padding-left: 1.25rem;
+      position: relative;
+    }
+
+    .platform-points li::before {
+      content: '▹';
+      position: absolute;
+      left: 0;
+      color: #2563eb;
+    }
+
+    .platform-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .platform-meta span {
+      padding: 0.35rem 0.8rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      font-size: 0.8rem;
+      color: #1e3a8a;
+      background: rgba(191, 219, 254, 0.4);
+    }
+
+    @media (min-width: 900px) {
+      .platform-card {
+        grid-template-columns: 1fr 220px;
+        align-items: stretch;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(79, 70, 229, 0.12);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+      cursor: pointer;
+    }
+
+    .looker-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      height: 100%;
+    }
+
+    .looker-visual {
+      margin-top: auto;
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      min-height: 160px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(14, 165, 233, 0.15));
+    }
+
+    .looker-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .looker-card:hover .looker-visual img {
+      transform: scale(1.05);
+    }
+
+    .looker-caption {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #1d4ed8;
+      margin-top: -0.3rem;
+    }
+
+    .context-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      height: 100%;
+    }
+
+    .context-visual {
+      margin-top: auto;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(16, 185, 129, 0.2));
+      border-radius: 1rem;
+      overflow: hidden;
+      min-height: 180px;
+      border: 1px solid rgba(79, 70, 229, 0.25);
+      position: relative;
+      isolation: isolate;
+    }
+
+    .context-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(1.05) contrast(1.05);
+      transition: transform 0.6s ease;
+    }
+
+    .context-card:hover .context-visual img {
+      transform: scale(1.05);
+    }
+
+    .context-caption {
+      position: absolute;
+      bottom: 0.5rem;
+      left: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.7);
+      color: #f8fafc;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: -30% 20%;
+      background: linear-gradient(45deg, rgba(79, 70, 229, 0.2), transparent);
+      transform: rotate(15deg);
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 30px 60px rgba(15, 23, 42, 0.18);
+      border-color: rgba(79, 70, 229, 0.45);
+    }
+
+    .card:hover::after {
+      opacity: 0.8;
+    }
+
+    .wisdom-flow {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      background: radial-gradient(circle at top, rgba(79, 70, 229, 0.08), rgba(255, 255, 255, 0.95));
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .wisdom-flow h3 {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #1d4ed8;
+    }
+
+    .flow-track {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 0.85rem;
+      position: relative;
+      padding: 0.8rem 0.5rem;
+    }
+
+    .flow-track::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 6%;
+      right: 6%;
+      height: 4px;
+      background: linear-gradient(90deg, rgba(79, 70, 229, 0.15), rgba(16, 185, 129, 0.35));
+      border-radius: 999px;
+      transform: translateY(-50%);
+      animation: shimmer-line 6s linear infinite;
+    }
+
+    @keyframes shimmer-line {
+      0% { filter: drop-shadow(0 0 4px rgba(79, 70, 229, 0.2)); }
+      50% { filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.4)); }
+      100% { filter: drop-shadow(0 0 4px rgba(79, 70, 229, 0.2)); }
+    }
+
+    .flow-node {
+      position: relative;
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1rem;
+      border: 1px solid rgba(79, 70, 229, 0.25);
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-height: 135px;
+      animation: pulse-node 6s ease-in-out infinite;
+    }
+
+    .flow-node::after {
+      content: attr(data-step);
+      position: absolute;
+      top: -12px;
+      right: 12px;
+      font-size: 0.75rem;
+      background: rgba(79, 70, 229, 0.1);
+      border-radius: 999px;
+      padding: 0.15rem 0.45rem;
+      letter-spacing: 0.1em;
+      color: #4338ca;
+    }
+
+    .flow-node:nth-child(2) { animation-delay: 0.4s; }
+    .flow-node:nth-child(3) { animation-delay: 0.8s; }
+    .flow-node:nth-child(4) { animation-delay: 1.2s; }
+
+    @keyframes pulse-node {
+      0%, 100% { transform: translateY(0); box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08); }
+      50% { transform: translateY(-6px); box-shadow: 0 18px 30px rgba(79, 70, 229, 0.25); }
+    }
+
+    .flow-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #1e1b4b;
+      text-transform: uppercase;
+    }
+
+    .flow-desc {
+      font-size: 0.9rem;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    .flow-highlight {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .flow-highlight div {
+      padding: 0.75rem 1rem;
+      border-radius: 0.9rem;
+      border: 1px dashed rgba(15, 23, 42, 0.15);
+      background: rgba(248, 250, 252, 0.9);
+      font-size: 0.9rem;
+      color: #334155;
+    }
+
+    #page-0 .card:first-of-type {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(16, 185, 129, 0.12));
+      border: 1.5px solid rgba(79, 70, 229, 0.25);
+      box-shadow: 0 25px 60px rgba(49, 46, 129, 0.15);
+    }
+
+    #page-0 .card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    #page-0 .card ul li {
+      font-size: 1.12rem;
+      letter-spacing: 0.02em;
+      position: relative;
+      padding-left: 1.9rem;
+      color: #0f172a;
+      background: rgba(248, 250, 252, 0.85);
+      border-radius: 0.9rem;
+      padding: 0.85rem 1rem 0.85rem 2rem;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    }
+
+    #page-0 .card ul li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1.1rem;
+      height: 1.1rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f46e5, #10b981);
+      color: rgb(226, 186, 186);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      box-shadow: 0 0 8px rgba(79, 70, 229, 0.3);
+    }
+
+    .welcome-hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.8rem;
+      border: 1.5px solid rgba(99, 102, 241, 0.3);
+      padding: clamp(1.5rem, 3vw, 3rem);
+      background: radial-gradient(circle at top left, rgba(26, 18, 167, 0.25), rgba(52, 125, 207, 0.9));
+      box-shadow: 0 30px 80px rgba(52, 190, 86, 0.2);
+    }
+
+    .welcome-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 80% 40%, rgba(63, 192, 102, 0.25), transparent 90%);
+      opacity: 0.8;
+    }
+
+    .welcome-hero > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .welcome-icons {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .welcome-icon-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.95rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      font-size: 0.85rem;
+      color: #312e81;
+      box-shadow: 0 8px 18px rgba(49, 46, 129, 0.15);
+    }
+
+    .welcome-icon-pill span {
+      font-size: 0.7rem;
+      color: rgba(49, 46, 129, 0.8);
+    }
+
+    @media (max-width: 900px) {
+      .flow-track {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .flow-track {
+        grid-template-columns: 1fr;
+      }
+      .flow-track::before {
+        display: none;
+      }
+    }
+
+    .blueprint-btn {
+      align-self: flex-start;
+      padding: 0.85rem 1.5rem;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(120deg, #4f46e5, #10b981);
+      color: #fff;
+      font-size: 0.95rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 12px 25px rgba(15, 23, 42, 0.15);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .blueprint-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 30px rgba(15, 23, 42, 0.2);
+    }
+
+    .blueprint-fact {
+      margin-top: 1.5rem;
+      padding: 1.25rem 1.5rem;
+      border-radius: 1.25rem;
+      border: 1px dashed rgba(79, 70, 229, 0.5);
+      background: rgba(248, 250, 252, 0.95);
+      color: #0f172a;
+      font-size: 1rem;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .blueprint-fact.visible {
+      display: block;
+      animation: fadePop 0.4s ease;
+    }
+
+    .blueprint-line {
+      margin: 0.35rem 0;
+      position: relative;
+      padding-left: 1.2rem;
+    }
+
+    .blueprint-line::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: #4f46e5;
+    }
+
+    @keyframes fadePop {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .chart-card {
+      border-radius: 1.2rem;
+      border: 1px solid rgba(79, 70, 229, 0.1);
+      padding: 1rem;
+      background: #f8fafc;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+      cursor: pointer;
+    }
+
+    .visual-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .visual-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(79, 70, 229, 0.15);
+      box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .visual-card h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      letter-spacing: 0.08em;
+      color: #1f2937;
+    }
+
+    .visual-card canvas {
+      width: 100% !important;
+      height: 180px !important;
+    }
+
+    .visual-card button,
+    .visual-btn {
+      align-self: flex-start;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(79, 70, 229, 0.5);
+      background: rgba(79, 70, 229, 0.08);
+      color: #312e81;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .visual-card button:hover,
+    .visual-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .report-basics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .report-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(79, 70, 229, 0.15);
+      box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .report-card canvas {
+      width: 100% !important;
+      height: 160px !important;
+    }
+
+    .report-kpis {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    .report-kpis div {
+      padding: 0.85rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: rgba(16, 185, 129, 0.08);
+      text-align: center;
+    }
+
+    .report-kpis strong {
+      display: block;
+      font-size: 1.3rem;
+      color: #0f766e;
+    }
+
+    .report-photo {
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      min-height: 160px;
+      background: #e2e8f0;
+    }
+
+    .report-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .report-photo-caption {
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #475569;
+      margin-top: 0.4rem;
+    }
+
+    .report-summary {
+      margin-top: 2rem;
+      border-radius: 1.5rem;
+      border: 1px dashed rgba(15, 23, 42, 0.2);
+      padding: 1.5rem;
+      background: rgba(248, 250, 252, 0.95);
+      display: grid;
+      gap: 1rem;
+    }
+
+    .report-summary h3 {
+      margin: 0;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #0f172a;
+    }
+
+    .report-story {
+      display: grid;
+      gap: 0.5rem;
+      color: #334155;
+      line-height: 1.6;
+    }
+
+    .report-guideline {
+      display: grid;
+      gap: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .report-guideline strong {
+      color: #4338ca;
+      letter-spacing: 0.05em;
+    }
+
+    .contents-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .contents-row {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      border: 1px solid rgba(79, 70, 229, 0.15);
+      border-radius: 1.25rem;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08);
+    }   
+
+    .contents-row .page-number {
+      background: rgba(79, 70, 229, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #312e81;
+    }
+
+    .contents-row .page-info {
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .process-flow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.85rem;
+      position: relative;
+    }
+
+    .process-step {
+      padding: 1rem;
+      border-radius: 1.25rem;
+      border: 1px solid rgba(93, 242, 193, 0.35);
+      background: rgba(255, 255, 255, 0.95);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      min-height: 135px;
+    }
+
+    .process-step.active {
+      border-color: rgba(16, 185, 129, 0.8);
+      box-shadow: 0 18px 35px rgba(16, 185, 129, 0.25);
+      transform: translateY(-4px);
+      background: linear-gradient(150deg, rgba(241, 253, 249, 0.9), #ffffff);
+    }
+
+    .process-details {
+      padding: 1.25rem;
+      border-radius: 1.25rem;
+      border: 1px dashed rgba(79, 70, 229, 0.35);
+      background: rgba(241, 245, 249, 0.95);
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .nav-controls {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.6rem;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(79, 70, 229, 0.15);
+      border-radius: 1rem;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.15);
+      z-index: 30;
+    }
+
+    .nav-btn {
+      border: none;
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(79, 70, 229, 0.08);
+      color: #312e81;
+      cursor: pointer;
+      transition: background 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      box-shadow: none;
+      background: rgba(107, 114, 128, 0.1);
+    }
+
+    footer {
+      text-align: center;
+      padding: 3rem 1rem 4rem;
+      font-size: 1.2rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #4c1d95;
+    }
+
+    /* Dataset Lab specific styling */
+    .dataset-app {
+      background: rgba(248, 250, 252, 0.9);
+      border-radius: 1.5rem;
+      padding: 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      height: 100%;
+    }
+
+    .dataset-app .data-table-container::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .dataset-app .data-table-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .dataset-app .data-table-container::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .dataset-app .sort-icon {
+      margin-left: 4px;
+      width: 0;
+      height: 0;
+      display: inline-block;
+      opacity: 0.4;
+    }
+
+    .dataset-app .sort-asc .sort-icon {
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-bottom: 5px solid #374151;
+      opacity: 1;
+    }
+
+    .dataset-app .sort-desc .sort-icon {
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid #374151;
+      opacity: 1;
+    }
+
+    .dataset-lab-scroll {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .dataset-lab-scroll .data-table-container {
+      flex: 1;
+    }
+
+    /* Dashboard sample block */
+    .dashboard-wrapper {
+      background: rgba(248, 250, 252, 0.9);
+      border-radius: 1.5rem;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      height: 100%;
+    }
+
+    .dash-card {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+      transition: transform 0.2s;
+    }
+
+    .dash-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .dashboard-grid-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .dashboard-charts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .dashboard-wrapper canvas {
+      max-height: 360px;
+    }
+
+    .preview-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      z-index: 25;
+    }
+
+    .preview-overlay.active {
+      display: flex;
+    }
+
+    .preview-content {
+      max-width: 900px;
+      max-height: 90vh;
+      overflow: auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 1.5rem;
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      padding: 2rem;
+      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25);
+      position: relative;
+    }
+
+    .preview-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: 1px solid rgba(79, 70, 229, 0.4);
+      color: #312e81;
+      font-size: 1rem;
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        flex-direction: column;
+        height: auto;
+        padding: 0.2in 0.15in;
+      }
+      .page {
+        height: calc(100vh - 6rem);
+        padding: 1.5rem 1rem;
+      }
+      .dataset-app,
+      .dashboard-wrapper {
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="pulse-circle" aria-hidden="true"></div>
+    <div class="instructor">
+      <img src="https://raw.githubusercontent.com/tobecontinue-hub/emp-photos/main/meas.jpg" alt="Kaung Myat Kyaw" />
+      <div class="headline">
+        <p class="tagline">Kaung Myat Kyaw · BI Executive</p>
+        <h1>Data Management &amp; Looker Studio Fundamentals</h1>
+      </div>
+    </div>
+  </header>
+
+  <main id="presentation">
+    <section class="page active fade-in" id="page-0" aria-label="Welcome">
+      <h2>Welcome</h2>
+      <div class="card welcome-hero" data-preview="true" style="text-align:center; padding:3rem 2rem; cursor:default;">
+        
+        <h3 style="font-size:clamp(2.4rem,4.5vw,3.6rem); text-transform:none; letter-spacing:0.08em; color:#2e04ec; margin:0;">Data Management &amp; Looker Studio Fundamentals</h3>
+        <div class="welcome-icons">
+          <div class="welcome-icon-pill">⚙️ <span>Data Craft</span></div>
+          <div class="welcome-icon-pill">📊 <span>Insight Design</span></div>
+          <div class="welcome-icon-pill">🔗 <span>Looker Studio</span></div>
+          <div class="welcome-icon-pill">🚀 <span>Applied BI</span></div>
+        </div>
+      </div>
+      <div class="card" data-preview="true">
+        <h3>Session Goals</h3>
+        <ul>
+          <li>Align on core data management concepts.</li>
+          <li>Understand data typing and lifecycle guardrails.</li>
+          <li>Build confidence designing Looker Studio reports.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="page" id="contents" aria-label="Contents">
+      <h2>Agenda</h2>
+      <div class="contents-list">
+        <div class="contents-row"><div class="page-number">01</div><div class="page-info"><span>Opening</span><strong>Welcome</strong></div></div>
+        <div class="contents-row"><div class="page-number">02</div><div class="page-info"><span>Orientation</span><strong>Agenda Overview</strong></div></div>
+        <div class="contents-row"><div class="page-number">03</div><div class="page-info"><span>Story</span><strong>Data Management Primer</strong></div></div>
+        <div class="contents-row"><div class="page-number">04</div><div class="page-info"><span>Story</span><strong>Data → Insight Flow</strong></div></div>
+        <div class="contents-row"><div class="page-number">05</div><div class="page-info"><span>Fundamentals</span><strong>Data Types</strong></div></div>
+        <div class="contents-row"><div class="page-number">06</div><div class="page-info"><span>Fundamentals</span><strong>Field Catalog</strong></div></div>
+        <div class="contents-row"><div class="page-number">07</div><div class="page-info"><span>Lifecycle</span><strong>Refinement Flow</strong></div></div>
+        <div class="contents-row"><div class="page-number">08</div><div class="page-info"><span>Platform</span><strong>Looker Studio Overview</strong></div></div>
+        <div class="contents-row"><div class="page-number">09</div><div class="page-info"><span>Platform</span><strong>Visual Gallery</strong></div></div>
+        <div class="contents-row"><div class="page-number">10</div><div class="page-info"><span>Build</span><strong>Report Basics</strong></div></div>
+        <div class="contents-row"><div class="page-number">11</div><div class="page-info"><span>Lab</span><strong>Interactive Dataset</strong></div></div>
+        <div class="contents-row"><div class="page-number">12</div><div class="page-info"><span>Lab</span><strong>Guided Exercise</strong></div></div>
+        <div class="contents-row"><div class="page-number">13</div><div class="page-info"><span>Blueprint</span><strong>Dashboard Plan</strong></div></div>
+        <div class="contents-row"><div class="page-number">14</div><div class="page-info"><span>Demo</span><strong>Sales Insight Dashboard</strong></div></div>
+        <div class="contents-row"><div class="page-number">15</div><div class="page-info"><span>Closing</span><strong>Thank You</strong></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="story-overview" aria-label="Data Management Overview">
+      <div class="data-overview-section">
+        <div class="data-overview-header">
+          <small>Foundational briefing</small>
+          <h2>Data Management Overview</h2>
+          <p style="max-width: 720px; color: #1e1b4b; font-size: 1.1rem; line-height: 1.6;">
+            The discipline that turns raw signals into reliable intelligence, aligning people, processes, and platforms to keep insights actionable at scale.
+          </p>
+        </div>
+        <div class="data-overview-grid">
+          <article class="card context-card" data-preview="true" data-feature="true">
+            <div>
+              <h3>Definition</h3>
+              <p>Strategic orchestration of people, processes, and technology to capture, organize, safeguard, and deliver trusted data throughout its lifecycle.</p>
+              <div class="context-insights">
+                <span>Governance</span>
+                <span>Operations</span>
+                <span>Enablement</span>
+              </div>
+            </div>
+            <figure class="context-visual" aria-hidden="true">
+              <span class="context-caption">Data Fabric</span>
+              <img src="https://www.digital-adoption.com/wp-content/uploads/2023/01/The-Five-Stages-Of-The-Data-Management-Lifecycle-1024x497.jpg" alt="Engineers collaborating over dashboards and architecture diagrams" loading="lazy">
+            </figure>
+          </article>
+          <article class="card context-card" data-preview="true">
+            <div>
+              <h3>Why it Matters?</h3>
+              <ul>
+                <li>Ensures accuracy, completeness, and consistency.</li>
+                <li>Supports compliance and reduces decision risk.</li>
+                <li>Accelerates insight delivery for stakeholders.</li>
+              </ul>
+            </div>
+            <figure class="context-visual" aria-hidden="true">
+              <span class="context-caption">Data Trust</span>
+              <img src="https://website-assets.atlan.com/img/Atlan-data-governance-maturity-model-visual.webp" alt="Executive reviewing compliance checklist on digital tablet" loading="lazy">
+            </figure>
+          </article>
+          <article class="card context-card" data-preview="true">
+            <div>
+              <h3>Story</h3>
+              <p>An e-commerce team centralizes product data, standardizes naming, and gains a single source of truth, reducing report creation time.</p>
+              <div class="context-insights">
+            
+              </div>
+            </div>
+            <figure class="context-visual" aria-hidden="true">
+              <span class="context-caption">Single Source</span>
+              <img src="https://www.a10networks.com/wp-content/uploads/the-chief-information-security-officer@2x-1024x662.png" alt="E-commerce team reviewing fulfillment dashboards together" loading="lazy">
+            </figure>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="data-journey" aria-label="Data to Wisdom">
+      <div class="data-journey-header">
+        <small>Signal → Story</small>
+        <h2>Data to Wisdom</h2>
+        <p style="max-width: 700px; color: #0f172a;">
+          Flowing from raw capture to informed judgment requires aligned platforms and intentional knowledge choreography.
+        </p>
+      </div>
+      <div class="data-journey-layout">
+        <div class="card data-visual-card" aria-hidden="true">
+          <figure>
+            <img src="https://lf19-static.bytepluscdn.com/obj/byteplus/cms/olap_vs_oltp.png" alt="Data platform landscape illustrating OLTP vs OLAP" loading="lazy">
+            <figcaption>DATA PLATFORM LANDSCAPE</figcaption>
+          </figure>
+          <p class="data-visual-caption">Landscape view of OLTP vs OLAP stacks, highlighting how transactional systems feed downstream analytics.</p>
+        </div>
+        <div class="card platform-card" data-preview="true" style="cursor:default;">
+          <div>
+            <h3>Data Platforms</h3>
+            <p><strong>Database (OLTP):</strong> Optimized for frequent reads/writes, highly normalized structures, powering day-to-day transactions.</p>
+            <p><strong>Data Warehouse (OLAP):</strong> Consolidates historical data, denormalized/star schemas, tuned for large scans and analytical queries.</p>
+            <ul class="platform-points">
+              <li><strong>Latency:</strong> Databases prioritize milliseconds; warehouses tolerate batch loads.</li>
+              <li><strong>Schema:</strong> Databases enforce strict relational models; warehouses embrace dimensional modeling.</li>
+              <li><strong>Use Case:</strong> Databases run applications; warehouses fuel BI, ML, and executive dashboards.</li>
+            </ul>
+            <div class="platform-meta">
+              <span>OLTP</span>
+              <span>OLAP</span>
+              <span>BI</span>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      <div class="wisdom-flow">
+        <h3>Knowledge Flow</h3>
+        <div class="flow-track">
+          <div class="flow-node" data-step="01">
+            <div class="flow-title">Data</div>
+            <div class="flow-desc">Raw facts & signals without interpretation.</div>
+            <div class="flow-highlight">
+              <div>Sensors, logs, and entries</div>
+              <div>May contain noise or gaps</div>
+            </div>
+          </div>
+          <div class="flow-node" data-step="02">
+            <div class="flow-title">Information</div>
+            <div class="flow-desc">Context attaches meaning, structure, and relationships.</div>
+            <div class="flow-highlight">
+              <div>Metadata & business definitions</div>
+              <div>Standardized formatting</div>
+            </div>
+          </div>
+          <div class="flow-node" data-step="03">
+            <div class="flow-title">Insight</div>
+            <div class="flow-desc">Analytical models expose patterns, anomalies, and drivers.</div>
+            <div class="flow-highlight">
+              <div>Trends & correlations</div>
+              <div>Diagnostic storytelling</div>
+            </div>
+          </div>
+          <div class="flow-node" data-step="04">
+            <div class="flow-title">Wisdom</div>
+            <div class="flow-desc">Insight blended with experience to guide action.</div>
+            <div class="flow-highlight">
+              <div>Scenario planning</div>
+              <div>Decisions & feedback loops</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="type-fundamentals" aria-label="Data Type Fundamentals">
+      <div class="data-type-section">
+        <div class="data-type-header">
+          <small>Precision briefing</small>
+          <h2>Data Type Fundamentals</h2>
+          <p style="max-width: 680px; color: #0f172a;">
+            Typed fields anchor trustworthy analytics. Aligning precision, storage, and semantics keeps Looker Studio visuals fast and reliable.
+          </p>
+        </div>
+        <div class="data-type-grid">
+          <article class="type-card" data-preview="true" data-feature="true">
+            <h3>Impact</h3>
+            <p>Correct typing optimizes storage, enforces validation, and keeps aggregations predictable.</p>
+            <div class="type-insights">
+              <span>Integrity</span>
+              <span>Performance</span>
+              <span>Governance</span>
+            </div>
+          </article>
+          <article class="type-card" data-preview="true">
+            <h3>Key Areas</h3>
+            <ul>
+              <li>Storage footprint &amp; compression.</li>
+              <li>Processing performance.</li>
+              <li>Analytical accuracy.</li>
+            </ul>
+            <div class="type-highlight">
+              <strong>Guardrail:</strong> enforce types upstream to avoid costly dashboard fixes.
+            </div>
+          </article>
+          <article class="type-card" data-preview="true">
+            <h3>Example</h3>
+            <p>Dates stored as strings hinder chronological filtering in Looker Studio. Converting to DATE unlocks timelines and comparisons.</p>
+            <div class="type-highlight">
+              <strong>Fix:</strong> <code>PARSE_DATE('%Y-%m-%d', OrderDate)</code>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="type-catalog" aria-label="Field Catalog">
+      <h2>Field Catalog</h2>
+      <article class="card" data-preview="true" style="cursor:default;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:0.5rem; border-bottom:1px solid #e2e8f0;">Type</th>
+              <th style="text-align:left; padding:0.5rem; border-bottom:1px solid #e2e8f0;">Purpose</th>
+              <th style="text-align:left; padding:0.5rem; border-bottom:1px solid #e2e8f0;">Example Values</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:0.5rem;">Numeric</td><td style="padding:0.5rem;">INT, FLOAT for metrics and calculations</td><td style="padding:0.5rem;"><code>245</code>, <code>78.6</code>, <code>-12</code></td></tr>
+            <tr><td style="padding:0.5rem;">Text</td><td style="padding:0.5rem;">VARCHAR for categories and labels</td><td style="padding:0.5rem;"><code>"Store A"</code>, <code>"Premium"</code></td></tr>
+            <tr><td style="padding:0.5rem;">Date/Time</td><td style="padding:0.5rem;">TIMESTAMP for time-series analysis</td><td style="padding:0.5rem;"><code>2024-09-01</code>, <code>2024-09-01 09:45</code></td></tr>
+            <tr><td style="padding:0.5rem;">Boolean</td><td style="padding:0.5rem;">True/False filter flags</td><td style="padding:0.5rem;"><code>true</code>, <code>false</code></td></tr>
+            <tr><td style="padding:0.5rem;">Geospatial</td><td style="padding:0.5rem;">Coordinates for mapping</td><td style="padding:0.5rem;"><code>16.8409° N</code>, <code>96.1735° E</code></td></tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+
+    <section class="page" id="data-lifecycle" aria-label="Data Refinement Flow">
+      <h2>Data Refinement Flow</h2>
+      <div class="process-flow">
+        <button class="process-step" data-step="collect"><strong>Collect</strong><span>Capture raw events, logs, and forms across regions and channels.</span></button>
+        <button class="process-step" data-step="clean"><strong>Clean</strong><span>Deduplicate orders, validate dates, and align naming conventions.</span></button>
+        <button class="process-step" data-step="transform"><strong>Transform</strong><span>Model metrics &amp; dimensions and calculate profitability.</span></button>
+        <button class="process-step" data-step="analyze"><strong>Analyze</strong><span>Segment by product, channel, and geography to reveal trends.</span></button>
+        <button class="process-step" data-step="report"><strong>Report</strong><span>Publish interactive Looker Studio reports with filters.</span></button>
+        <button class="process-step" data-step="act"><strong>Act</strong><span>Share insights with owners and trigger operational decisions.</span></button>
+      </div>
+      <div class="process-details"></div>
+    </section>
+
+    <section class="page" id="looker-intro" aria-label="Looker Studio Overview">
+      <h2>Looker Studio Overview</h2>
+      <div class="card-grid">
+        <article class="card looker-card" data-preview="true">
+          <div>
+            <h3>Platform</h3>
+            <p>Looker Studio enables live dashboards, data blending, and rapid sharing.</p>
+          </div>
+          <div class="looker-visual" aria-hidden="true">
+            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=80" alt="Analyst overviewing cloud BI platform" loading="lazy">
+          </div>
+          <div class="looker-caption">Live dashboards</div>
+        </article>
+        <article class="card looker-card" data-preview="true">
+          <div>
+            <h3>Capabilities</h3>
+            <ul>
+              <li>Connectors to Google &amp; partner data sources.</li>
+              <li>Interactive controls, filters, and drill-downs.</li>
+              <li>Calculated fields &amp; blending for custom logic.</li>
+            </ul>
+          </div>
+          <div class="looker-visual" aria-hidden="true">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80" alt="Interactive dashboard controls" loading="lazy">
+          </div>
+          <div class="looker-caption">Interactive controls</div>
+        </article>
+        <article class="card looker-card" data-preview="true">
+          <div>
+            <h3>Interface</h3>
+            <ul>
+              <li>Canvas workspace &amp; pages.</li>
+              <li>Chart property panel.</li>
+              <li>Data source manager.</li>
+            </ul>
+          </div>
+          <div class="looker-visual" aria-hidden="true">
+            <img src="https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=900&q=80" alt="Designer arranging charts on canvas" loading="lazy">
+          </div>
+          <div class="looker-caption">Builder workspace</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="page" id="visual-gallery" aria-label="Visual Gallery">
+      <h2>Visual Gallery</h2>
+     
+      <div class="visual-gallery-grid">
+        <article class="visual-card" data-chart="bar">
+          <div>
+            <h3>Bar Chart</h3>
+            <p>Compare categorical performance (e.g., stores, channels).</p>
+          </div>
+          <canvas id="gallery-bar"></canvas>
+          <button type="button" data-trigger="bar">Replay</button>
+        </article>
+        <article class="visual-card" data-chart="line">
+          <div>
+            <h3>Line Chart</h3>
+            <p>Track trends over time with moving averages.</p>
+          </div>
+          <canvas id="gallery-line"></canvas>
+          <button type="button" data-trigger="line">Replay</button>
+        </article>
+        <article class="visual-card" data-chart="pie">
+          <div>
+            <h3>Pie Chart</h3>
+            <p>Highlight contribution of channels or segments.</p>
+          </div>
+          <canvas id="gallery-pie"></canvas>
+          <button type="button" data-trigger="pie">Replay</button>
+        </article>
+        <article class="visual-card" data-chart="metric">
+          <div>
+            <h3>Metric Cards</h3>
+            <p>Show KPIs like Conversion %, Revenue, AOV.</p>
+          </div>
+          <canvas id="gallery-metric"></canvas>
+          <button type="button" data-trigger="metric">Replay</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="page" id="report-basics" aria-label="Report Building Basics">
+      <h2>Report Building Basics</h2>
+      <div class="report-basics-grid">
+        <article class="report-card" data-chart="report-bar">
+          <h3>Charts &amp; Tables</h3>
+          <p>Drag elements, bind dimensions &amp; metrics, and align styles with your palette.</p>
+          <canvas id="report-bar"></canvas>
+          <button type="button" class="visual-btn" data-report-trigger="report-bar">Refresh</button>
+        </article>
+        <article class="report-card" data-chart="report-controls">
+          <h3>Controls &amp; Filters</h3>
+          <p>Use dropdowns, sliders, and date range controls to empower self-service exploration.</p>
+          <canvas id="report-controls"></canvas>
+          <button type="button" class="visual-btn" data-report-trigger="report-controls">Refresh</button>
+        </article>
+        <article class="report-card">
+          <h3>Calculated Fields</h3>
+          <p>Create custom KPIs like </p><code>Break-Even Sales Point = Fixed Costs / (Sales Price per Unit – Variable Costs per Unit)</code>
+          <div class="report-photo" aria-hidden="true">
+            <img src="https://www.mckinsey.com/~/media/mckinsey/business%20functions/marketing%20and%20sales/our%20insights/experience%20led%20growth%20a%20new%20way%20to%20create%20value/svgz-customer-experience-ex2-v4.svgz?cq=50&cpy=Center" alt="Financial analyst reviewing business interpretation dashboard" loading="lazy">
+          </div>
+          <div class="report-photo-caption">Metrics storyboard</div>
+          <div class="report-kpis">
+            <div><span>Conversion</span><strong>4.8%</strong></div>
+            <div><span>Average Order</span><strong>$92</strong></div>
+          </div>
+        </article>
+      </div>
+      <div class="report-summary">
+        <h3>Executive Summary</h3>
+        <div class="report-story">
+          <p><strong>Shopify Insight Story:</strong> Revenue surged 18% vs. last quarter, driven by accessory bundles and a 0.8pt lift in site conversion after launching curated landing pages.</p>
+          <p>   
+  <strong>The Math:</strong> 
+  <code style="background: #f4f4f4; padding: 2px 5px; border-radius: 4px;">
+    Conversion Rate = (Number of Sales &divide; Total Visitors) &times; 100
+  </code>
+</p>
+    <p style="font-family: sans-serif; line-height: 1.5;">
+  <strong>Performance:</strong> 
+  <span style="background: #f0f0f0; padding: 2px 6px;">4.0% Conversion</span> 
+  &nbsp;&rarr;&nbsp; 
+  <span style="color: #2e7d32; font-weight: bold;">+0.8pt Lift</span> (via Curated Pages) 
+  &nbsp;&rarr;&nbsp; 
+  <mark style="background: #c8e6c9; padding: 2px 6px;"><strong>4.8% Conversion</strong></mark>
+</p>
+          <p>Beauty lagged expectations, but margin held steady as dynamic shipping rules rebalanced free-delivery thresholds.</p>
+          
+
+        </div>
+        <div class="report-guideline">
+          <strong>Guideline:</strong>
+          <span>Lead with one KPI swing, cite the lever that moved it, and close with an action item or mitigation.</span>
+          <span>Use Looker Studio page 1 for the executive snapshot, page 2 for channel detail, and page 3 for owner-level next steps.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="dataset-lab" aria-label="Interactive Dataset Lab">
+      <h2>Interactive Dataset Lab</h2>
+      <p>Search, filter, sort, and paginate the sample orders below. Use this to validate data quality before connecting to Looker Studio.</p>
+      <div class="dataset-app" id="dataset-app">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-2 p-4 bg-white rounded-xl shadow-lg border border-gray-100">
+          <div class="w-full sm:w-1/3 mb-4 sm:mb-0">
+            <input type="text" id="search-input" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm" placeholder="Search by Country, Product, or Sales Rep...">
+          </div>
+          <div class="flex items-center space-x-4">
+            <label for="page-size-select" class="text-sm font-medium text-gray-700">Rows per page:</label>
+            <select id="page-size-select" class="p-2 border border-gray-300 rounded-lg shadow-sm text-sm">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
+        <div id="filter-controls" class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white rounded-xl shadow-lg border border-gray-100"></div>
+        <div class="dataset-lab-scroll bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+          <div class="overflow-x-auto data-table-container">
+            <table id="data-table" class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50 sticky top-0"></thead>
+              <tbody id="table-body" class="bg-white divide-y divide-gray-200"></tbody>
+            </table>
+          </div>
+          <div class="flex justify-between items-center p-4 border-t border-gray-200">
+            <div id="table-info" class="text-sm text-gray-600"></div>
+            <div class="flex space-x-2">
+              <button id="prev-page-btn" class="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition">Previous</button>
+              <span id="page-numbers" class="flex items-center space-x-1 text-sm font-medium text-gray-700"></span>
+              <button id="next-page-btn" class="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="guided-exercise" aria-label="Guided Exercise">
+      <h2>Guided Exercise</h2>
+      <div class="card-grid">
+        <article class="card" data-preview="true">
+          <h3>Hands-on Lab</h3>
+          <ul>
+            <li>Connect the sample dataset source.</li>
+            <li>Build a multi-page report with overview + detail.</li>
+            <li>Add channel filters and highlight top performers.</li>
+            <li>Publish with scheduled refresh and viewer-level filters.</li>
+          </ul>
+        </article>
+        <article class="card" data-preview="true">
+          <h3>Readiness Checklist</h3>
+          <ul>
+            <li>✅ Data source verified &amp; typed.</li>
+            <li>✅ KPIs have owner + definition.</li>
+            <li>✅ Controls documented for end users.</li>
+            <li>✅ Storyline slide includes executive summary.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="page" id="dashboard-blueprint" aria-label="Dashboard Blueprint">
+      <h2>Dashboard Blueprint</h2>
+      <button class="blueprint-btn" id="blueprint-toggle" type="button">Reveal Insight</button>
+      <div class="blueprint-fact" id="blueprint-fact" tabindex="0" aria-live="polite">
+        
+      </div>
+      <ul style="margin-top:1.5rem; color:#475569;">
+        <li>Executive overview panel highlights KPI row (Revenue, Profit, AOV, Margin) and regional/channel mix.</li>
+        <li>Product &amp; category section tracks stacked revenue bars, top-product leaderboard, and accessory attach funnel.</li>
+        <li>Rep &amp; channel operations surface leaderboard variance, profit vs quantity scatter, and filter controls.</li>
+      </ul>
+    </section>
+
+    <section class="page" id="dashboard-demo" aria-label="Sales Insight Dashboard">
+      <h2>Sales Insight Dashboard</h2>
+      <p>Live KPI, chart, and heatmap views powered by the same sample dataset.</p>
+      <div class="dashboard-wrapper">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="filter-group">
+            <label for="region-filter" class="block text-sm font-medium text-gray-700 mb-1">Region</label>
+            <select id="region-filter" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+              <option value="All">All Regions</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="category-filter" class="block text-sm font-medium text-gray-700 mb-1">Product Category</label>
+            <select id="category-filter" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+              <option value="All">All Categories</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="channel-filter" class="block text-sm font-medium text-gray-700 mb-1">Sales Channel</label>
+            <select id="channel-filter" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+              <option value="All">All Channels</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div id="card-revenue" class="dash-card bg-white p-6 rounded-xl border border-gray-100"><p class="text-sm font-medium text-gray-500">Total Revenue</p><p class="text-3xl font-bold text-blue-600 mt-1">$0</p><p class="text-xs text-gray-400 mt-2">Sum of Revenue</p></div>
+          <div id="card-profit" class="dash-card bg-white p-6 rounded-xl border border-gray-100"><p class="text-sm font-medium text-gray-500">Total Profit</p><p class="text-3xl font-bold text-green-600 mt-1">$0</p><p class="text-xs text-gray-400 mt-2">Sum of Profit</p></div>
+          <div id="card-orders" class="dash-card bg-white p-6 rounded-xl border border-gray-100"><p class="text-sm font-medium text-gray-500">Total Orders</p><p class="text-3xl font-bold text-yellow-600 mt-1">0</p><p class="text-xs text-gray-400 mt-2">Count of Transactions</p></div>
+          <div id="card-margin" class="dash-card bg-white p-6 rounded-xl border border-gray-100"><p class="text-sm font-medium text-gray-500">Profit Margin</p><p class="text-3xl font-bold text-purple-600 mt-1">0.0%</p><p class="text-xs text-gray-400 mt-2">Profit / Revenue</p></div>
+        </div>
+        <div class="dashboard-charts">
+          <div class="lg:col-span-2 dash-card bg-white p-6 rounded-xl border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Revenue by Country</h3>
+            <canvas id="bar-chart"></canvas>
+          </div>
+          <div class="dash-card bg-white p-6 rounded-xl border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Revenue by Category</h3>
+            <canvas id="pie-chart"></canvas>
+          </div>
+        </div>
+        <div class="dashboard-charts">
+          <div class="lg:col-span-2 dash-card bg-white p-6 rounded-xl border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Daily Profit Trend</h3>
+            <canvas id="line-chart"></canvas>
+          </div>
+          <div class="dash-card bg-white p-6 rounded-xl border border-gray-100 overflow-x-auto">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Region vs Channel Profit</h3>
+            <div id="heatmap-table" class="min-w-max text-sm"></div>
+            <p class="text-xs text-gray-400 mt-4">Shade indicates average profit ($) per transaction.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="thank-you" aria-label="Closing">
+      <h2>Thank You</h2>
+      <div class="card" data-preview="true" style="text-align:center; padding:3rem 2rem; cursor:default;">
+        <h3 style="font-size:clamp(2rem,4vw,3rem); text-transform:none; color:#0f766e; letter-spacing:0.08em; margin:0;">Keep Exploring Data Stories</h3>
+        <p style="max-width:520px; margin:1rem auto;">Q&amp;A</p>
+      </div>
+    </section>
+  </main>
+
+ 
+
+  <div class="nav-controls" aria-label="Page navigation">
+    <button class="nav-btn" id="prev-btn" aria-label="Previous">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <polyline points="14 6 8 12 14 18" />
+      </svg>
+    </button>
+    <input type="range" id="page-slider" min="0" max="14" value="0" aria-label="Slide to jump between pages">
+    <button class="nav-btn" id="next-btn" aria-label="Next">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <polyline points="10 6 16 12 10 18" />
+      </svg>
+    </button>
+    <span class="page-indicator" id="page-indicator" style="font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:#475569;">Page 0 of 14</span>
+  </div>
+
+  <div class="preview-overlay" id="preview">
+    <div class="preview-content">
+      <button class="preview-close" id="preview-close">Close</button>
+      <div id="preview-body"></div>
+    </div>
+  </div>
+
+  <script>
+    const SALES_CSV = `Order_ID,Order_Date,Region,Country,Product_Category,Product_Name,Sales_Channel,Sales_Rep,Quantity,Unit_Price,Cost,Revenue,Profit\n1001,2024-01-01,Asia,Myanmar,Electronics,Laptop,Online,Aung Aung,2,850,1400,1700,300\n1002,2024-01-02,Asia,Myanmar,Electronics,Tablet,Retail,Kyaw Kyaw,3,420,900,1260,360\n1003,2024-01-03,Asia,Thailand,Furniture,Office Chair,Online,Somchai,5,120,400,600,200\n1004,2024-01-04,Asia,Thailand,Furniture,Desk,Retail,Ananda,2,300,420,600,180\n1005,2024-01-05,Asia,Singapore,Electronics,Smartphone,Online,Li Wei,4,700,2000,2800,800\n1006,2024-01-06,Asia,Singapore,Accessories,Headphones,Retail,Chen,6,80,300,480,180\n1007,2024-01-07,Europe,Germany,Electronics,Laptop,Online,Markus,1,900,700,900,200\n1008,2024-01-08,Europe,Germany,Furniture,Office Chair,Retail,Julia,4,130,360,520,160\n1009,2024-01-09,Europe,France,Accessories,Keyboard,Online,Pierre,8,45,240,360,120\n1010,2024-01-10,Europe,France,Electronics,Monitor,Retail,Luc,3,260,600,780,180\n1011,2024-01-11,Asia,India,Electronics,Tablet,Online,Rahul,6,410,1800,2460,660\n1012,2024-01-12,Asia,India,Furniture,Desk,Retail,Amit,2,320,450,640,190\n1013,2024-01-13,Asia,Myanmar,Accessories,Mouse,Online,Su Su,10,25,150,250,100\n1014,2024-01-14,Asia,Myanmar,Electronics,Monitor,Retail,Hla Hla,3,270,650,810,160\n1015,2024-01-15,Asia,Thailand,Accessories,Webcam,Online,Niran,7,65,300,455,155\n1016,2024-01-16,Asia,Thailand,Electronics,Laptop,Retail,Ananda,2,880,1400,1760,360\n1017,2024-01-17,Asia,Singapore,Electronics,Smartwatch,Online,Li Wei,5,320,1200,1600,400\n1018,2024-01-18,Asia,Singapore,Accessories,Charger,Retail,Chen,12,20,120,240,120\n1019,2024-01-19,Europe,Germany,Electronics,Smartphone,Online,Markus,3,720,1500,2160,660\n1020,2024-01-20,Europe,Germany,Accessories,Mouse,Retail,Julia,9,28,180,252,72\n1021,2024-01-21,Europe,France,Furniture,Desk,Online,Pierre,1,340,230,340,110\n1022,2024-01-22,Europe,France,Electronics,Tablet,Retail,Luc,4,430,1400,1720,320\n1023,2024-01-23,Asia,India,Accessories,Keyboard,Online,Rahul,6,50,240,300,60\n1024,2024-01-24,Asia,India,Electronics,Laptop,Retail,Amit,1,920,720,920,200\n1025,2024-01-25,Asia,Myanmar,Furniture,Office Chair,Online,Aung Aung,4,140,420,560,140\n1026,2024-01-26,Asia,Myanmar,Electronics,Smartphone,Retail,Kyaw Kyaw,2,680,900,1360,460\n1027,2024-01-27,Asia,Thailand,Accessories,Headphones,Online,Somchai,5,90,300,450,150\n1028,2024-01-28,Asia,Thailand,Electronics,Monitor,Retail,Niran,2,280,420,560,140\n1029,2024-01-29,Asia,Singapore,Furniture,Desk,Online,Li Wei,1,360,260,360,100\n1030,2024-01-30,Asia,Singapore,Electronics,Tablet,Retail,Chen,3,450,1000,1350,350\n1031,2024-01-31,Europe,Germany,Accessories,Webcam,Online,Markus,4,75,200,300,100\n1032,2024-02-01,Europe,Germany,Electronics,Laptop,Retail,Julia,1,950,760,950,190\n1033,2024-02-02,Europe,France,Accessories,Mouse,Online,Pierre,10,30,180,300,120\n1034,2024-02-03,Europe,France,Electronics,Monitor,Retail,Luc,2,290,420,580,160\n1035,2024-02-04,Asia,India,Furniture,Office Chair,Online,Rahul,3,150,360,450,90\n1036,2024-02-05,Asia,India,Electronics,Smartphone,Retail,Amit,2,710,1000,1420,420\n1037,2024-02-06,Asia,Myanmar,Accessories,Keyboard,Online,Su Su,7,48,210,336,126\n1038,2024-02-07,Asia,Myanmar,Electronics,Laptop,Retail,Hla Hla,1,880,700,880,180\n1039,2024-02-08,Asia,Thailand,Furniture,Desk,Online,Somchai,2,330,460,660,200\n1040,2024-02-09,Asia,Thailand,Accessories,Charger,Retail,Ananda,15,22,150,330,180\n1041,2024-02-10,Asia,Singapore,Electronics,Smartwatch,Online,Li Wei,4,340,900,1360,460\n1042,2024-02-11,Asia,Singapore,Accessories,Headphones,Retail,Chen,5,95,350,475,125\n1043,2024-02-12,Europe,Germany,Electronics,Tablet,Online,Markus,3,440,900,1320,420\n1044,2024-02-13,Europe,Germany,Furniture,Office Chair,Retail,Julia,2,155,260,310,50\n1045,2024-02-14,Europe,France,Accessories,Keyboard,Online,Pierre,6,55,270,330,60\n1046,2024-02-15,Europe,France,Electronics,Laptop,Retail,Luc,1,980,780,980,200\n1047,2024-02-16,Asia,India,Accessories,Mouse,Online,Rahul,12,26,180,312,132\n1048,2024-02-17,Asia,India,Electronics,Monitor,Retail,Amit,2,300,430,600,170\n1049,2024-02-18,Asia,Myanmar,Furniture,Desk,Online,Aung Aung,1,350,260,350,90\n1050,2024-02-19,Asia,Myanmar,Electronics,Tablet,Retail,Kyaw Kyaw,2,420,700,840,140`;
+
+    const NUMERIC_FIELDS = ['Order_ID', 'Quantity', 'Unit_Price', 'Cost', 'Revenue', 'Profit'];
+
+    const processContent = {
+      collect: {
+        title: 'Collect → Clean',
+        body: 'Source audits prevent garbage before it hits the pipeline. Standard file formats and API contracts make downstream processing deterministic.',
+        highlights: ['Channels captured: Online + Retail', 'Regions logged across Asia & Europe', '50 orders staged for QA']
+      },
+      clean: {
+        title: 'Clean → Transform',
+        body: 'Validation, deduping, and type coercion ensure the dataset is trustworthy before modeling. Version control scripts for repeatability.',
+        highlights: ['Removed duplicate Order_IDs', 'Aligned spellings & casing', 'Enforced ISO date format']
+      },
+      transform: {
+        title: 'Transform → Analyze',
+        body: 'Business logic and semantic layers align KPIs across teams. Dimensional models make ad hoc slicing fast and intuitive.',
+        highlights: ['Derived Profit = Revenue - Cost', 'Segmented by category & channel', 'Mapped geography hierarchy']
+      },
+      analyze: {
+        title: 'Analyze → Report',
+        body: 'Explore trends, identify anomalies, and translate hypotheses into visuals that highlight causality.',
+        highlights: ['Revenue heatmap by country', 'Profitability leaderboard', 'Channel mix analysis']
+      },
+      report: {
+        title: 'Report → Act',
+        body: 'Looker Studio stories contextualize the insight for decision makers. Tailor annotations and filter controls to highlight what matters.',
+        highlights: ['Multi-page report template', 'Viewer-level filters configured', 'KPI summaries annotated']
+      },
+      act: {
+        title: 'Act → Feedback',
+        body: 'Share outcomes and feed new requirements back to data producers. Continuous improvement keeps the lifecycle relevant.',
+        highlights: ['Insights shared with Sales', 'Action items logged in Jira', 'Feedback loop scheduled monthly']
+      }
+    };
+
+    function parseSalesCSV(csv) {
+      const lines = csv.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const values = line.split(',');
+        const entry = {};
+        headers.forEach((header, index) => {
+          let value = values[index]?.trim() ?? '';
+          if (NUMERIC_FIELDS.includes(header)) {
+            value = Number(value);
+          }
+          entry[header] = value;
+        });
+        return entry;
+      });
+    }
+
+    function structuredCopy(data) {
+      return JSON.parse(JSON.stringify(data));
+    }
+
+    function initSlideNavigation() {
+      const pages = Array.from(document.querySelectorAll('.page'));
+      const slider = document.getElementById('page-slider');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const indicator = document.getElementById('page-indicator');
+      const totalPages = Math.max(pages.length - 1, 0);
+      let current = 0;
+
+      function updateIndicator() {
+        if (indicator) {
+          indicator.textContent = `Page ${current} of ${totalPages}`;
+        }
+        if (slider) {
+          slider.max = totalPages;
+          slider.value = current;
+        }
+        if (prevBtn) prevBtn.disabled = current === 0;
+        if (nextBtn) nextBtn.disabled = current === totalPages;
+      }
+
+      function updatePages(direction = 1) {
+        const leavingPage = document.querySelector('.page.active');
+        const enteringPage = pages[current];
+
+        if (leavingPage && leavingPage !== enteringPage) {
+          leavingPage.classList.remove('fade-in');
+          leavingPage.classList.add('fade-out', 'is-leaving');
+          leavingPage.addEventListener('transitionend', (event) => {
+            if (event.target !== leavingPage) return;
+            leavingPage.classList.remove('active', 'fade-out', 'is-leaving');
+          }, { once: true });
+        }
+
+        if (enteringPage) {
+          enteringPage.classList.add('active');
+          requestAnimationFrame(() => {
+            enteringPage.classList.add('fade-in');
+          });
+        }
+
+        updateIndicator();
+      }
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (current > 0) {
+            current--;
+            updatePages(-1);
+          }
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          if (current < totalPages) {
+            current++;
+            updatePages(1);
+          }
+        });
+      }
+
+      if (slider) {
+        slider.addEventListener('input', (event) => {
+          const newIndex = Number(event.target.value);
+          if (Number.isNaN(newIndex) || newIndex === current) return;
+          const direction = newIndex > current ? 1 : -1;
+          current = newIndex;
+          updatePages(direction);
+        });
+      }
+
+      updateIndicator();
+    }
+
+    function initPreview() {
+      const preview = document.getElementById('preview');
+      const previewBody = document.getElementById('preview-body');
+      const previewClose = document.getElementById('preview-close');
+      if (!preview || !previewBody) return;
+
+      const openPreview = (content) => {
+        previewBody.innerHTML = '';
+        previewBody.appendChild(content.cloneNode(true));
+        preview.classList.add('active');
+      };
+
+      const closePreview = () => {
+        preview.classList.remove('active');
+        previewBody.innerHTML = '';
+      };
+
+      document.querySelectorAll('.card, .chart-card').forEach(el => {
+        el.addEventListener('click', (event) => {
+          if (event.currentTarget.hasAttribute('data-preview')) {
+            event.stopPropagation();
+            openPreview(el);
+          }
+        });
+      });
+
+      previewClose?.addEventListener('click', closePreview);
+      preview.addEventListener('click', (event) => {
+        if (event.target === preview) closePreview();
+      });
+    }
+
+    function initProcessFlow() {
+      document.querySelectorAll('.process-flow').forEach(flow => {
+        const steps = flow.querySelectorAll('.process-step');
+        const detailsPanel = flow.parentElement.querySelector('.process-details');
+
+        function activate(stepKey) {
+          steps.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.step === stepKey);
+          });
+          const content = processContent[stepKey];
+          if (detailsPanel && content) {
+            const highlights = content.highlights?.map(item => `<div class="process-pill">${item}</div>`).join('') || '';
+            detailsPanel.innerHTML = `<h4>${content.title}</h4><p>${content.body}</p><div class="process-highlights">${highlights}</div>`;
+          }
+        }
+
+        steps.forEach(btn => btn.addEventListener('click', () => activate(btn.dataset.step)));
+        activate('collect');
+      });
+    }
+
+    function initDatasetLab(rawData) {
+      const tableHead = document.querySelector('#data-table thead');
+      const tableBody = document.getElementById('table-body');
+      const tableInfo = document.getElementById('table-info');
+      const prevBtn = document.getElementById('prev-page-btn');
+      const nextBtn = document.getElementById('next-page-btn');
+      const pageIndicator = document.getElementById('page-numbers');
+      const searchInput = document.getElementById('search-input');
+      const pageSizeSelect = document.getElementById('page-size-select');
+      const filterContainer = document.getElementById('filter-controls');
+      if (!tableHead || !tableBody) return;
+
+      const headers = Object.keys(rawData[0] || {});
+      const filterableColumns = ['Region', 'Country', 'Product_Category', 'Sales_Channel'];
+      const columnFilters = {};
+
+      const state = {
+        allData: rawData,
+        filteredData: [...rawData],
+        headers,
+        sortColumn: 'Order_ID',
+        sortDirection: 'asc',
+        currentPage: 1,
+        pageSize: Number(pageSizeSelect.value) || 10
+      };
+
+      function getHeaderDisplay(key) {
+        return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      }
+
+      function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        }).format(value);
+      }
+
+      function populateFilters() {
+        filterContainer.innerHTML = '';
+        const uniqueValues = {};
+        filterableColumns.forEach(column => {
+          uniqueValues[column] = new Set();
+        });
+
+        state.allData.forEach(row => {
+          filterableColumns.forEach(column => {
+            if (row[column]) uniqueValues[column].add(row[column]);
+          });
+        });
+
+        filterableColumns.forEach(column => {
+          if (!columnFilters[column]) columnFilters[column] = 'All';
+          const filterDiv = document.createElement('div');
+          filterDiv.className = 'flex flex-col space-y-1';
+          const label = document.createElement('label');
+          label.className = 'text-xs font-semibold text-gray-700';
+          label.textContent = getHeaderDisplay(column);
+          const select = document.createElement('select');
+          select.id = `filter-${column}`;
+          select.className = 'p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm text-sm';
+          select.innerHTML = '<option value="All">All</option>';
+          [...uniqueValues[column]].sort().forEach(value => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            if (columnFilters[column] === value) option.selected = true;
+            select.appendChild(option);
+          });
+          select.addEventListener('change', (event) => {
+            columnFilters[column] = event.target.value;
+            state.currentPage = 1;
+            renderTable();
+          });
+          filterDiv.appendChild(label);
+          filterDiv.appendChild(select);
+          filterContainer.appendChild(filterDiv);
+        });
+      }
+
+      function filterData() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+
+        const filteredByColumns = state.allData.filter(row => {
+          return Object.entries(columnFilters).every(([column, value]) => {
+            if (!value || value === 'All') return true;
+            return row[column] === value;
+          });
+        });
+
+        return filteredByColumns.filter(row => {
+          if (!searchTerm) return true;
+          return [row.Country, row.Product_Name, row.Sales_Rep, row.Product_Category]
+            .some(field => String(field).toLowerCase().includes(searchTerm));
+        });
+      }
+
+      function sortData(data) {
+        return [...data].sort((a, b) => {
+          const { sortColumn, sortDirection } = state;
+          const aValue = a[sortColumn];
+          const bValue = b[sortColumn];
+
+          if (typeof aValue === 'number' && typeof bValue === 'number') {
+            return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+          }
+          if (sortColumn === 'Order_Date') {
+            return sortDirection === 'asc' ? new Date(aValue) - new Date(bValue) : new Date(bValue) - new Date(aValue);
+          }
+          const aStr = String(aValue).toLowerCase();
+          const bStr = String(bValue).toLowerCase();
+          if (aStr < bStr) return sortDirection === 'asc' ? -1 : 1;
+          if (aStr > bStr) return sortDirection === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+
+      function renderHeader() {
+        tableHead.innerHTML = '';
+        const row = document.createElement('tr');
+        row.className = 'text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+        state.headers.forEach(key => {
+          const th = document.createElement('th');
+          th.className = 'px-6 py-3 cursor-pointer select-none hover:bg-gray-100 transition';
+          th.scope = 'col';
+          let iconClass = 'sort-none';
+          if (state.sortColumn === key) {
+            iconClass = state.sortDirection === 'asc' ? 'sort-asc' : 'sort-desc';
+          }
+          th.innerHTML = `<div class="flex items-center">${getHeaderDisplay(key)}<span class="${iconClass}"><i class="sort-icon"></i></span></div>`;
+          th.addEventListener('click', () => {
+            if (state.sortColumn === key) {
+              state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+              state.sortColumn = key;
+              state.sortDirection = 'asc';
+            }
+            state.currentPage = 1;
+            renderTable();
+          });
+          row.appendChild(th);
+        });
+        tableHead.appendChild(row);
+      }
+
+      function renderBody(data) {
+        tableBody.innerHTML = '';
+        const start = (state.currentPage - 1) * state.pageSize;
+        const paginated = data.slice(start, start + state.pageSize);
+
+        paginated.forEach((row, index) => {
+          const tr = document.createElement('tr');
+          tr.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-gray-100';
+          state.headers.forEach(key => {
+            const td = document.createElement('td');
+            td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-800';
+            let value = row[key];
+            if (['Revenue', 'Profit', 'Unit_Price', 'Cost'].includes(key)) {
+              td.className += ' text-right font-semibold';
+              value = formatCurrency(value);
+              if (key === 'Profit') {
+                td.className += row[key] <= 0 ? ' text-red-600' : ' text-green-600';
+              }
+            } else if (['Quantity', 'Order_ID'].includes(key)) {
+              td.className += ' text-center';
+            }
+            td.textContent = value;
+            tr.appendChild(td);
+          });
+          tableBody.appendChild(tr);
+        });
+
+        if (!paginated.length) {
+          tableBody.innerHTML = `<tr><td colspan="${state.headers.length}" class="px-6 py-8 text-center text-lg text-gray-500">No matching records found.</td></tr>`;
+        }
+      }
+
+      function renderPagination(totalRows) {
+        const totalPages = Math.ceil(totalRows / state.pageSize) || 1;
+        const start = totalRows ? (state.currentPage - 1) * state.pageSize + 1 : 0;
+        const end = Math.min(state.currentPage * state.pageSize, totalRows);
+        tableInfo.textContent = `Showing ${start}-${end} of ${totalRows} entries`;
+        prevBtn.disabled = state.currentPage === 1;
+        nextBtn.disabled = state.currentPage >= totalPages;
+        pageIndicator.innerHTML = `<span class="px-3 py-1 bg-blue-500 text-white rounded-lg">${totalRows ? state.currentPage : 0} / ${totalPages}</span>`;
+      }
+
+      function renderTable() {
+        state.filteredData = sortData(filterData());
+        renderHeader();
+        renderBody(state.filteredData);
+        renderPagination(state.filteredData.length);
+      }
+
+      prevBtn.addEventListener('click', () => {
+        if (state.currentPage > 1) {
+          state.currentPage--;
+          renderTable();
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(state.filteredData.length / state.pageSize) || 1;
+        if (state.currentPage < totalPages) {
+          state.currentPage++;
+          renderTable();
+        }
+      });
+
+      searchInput.addEventListener('input', () => {
+        state.currentPage = 1;
+        renderTable();
+      });
+
+      pageSizeSelect.addEventListener('change', (event) => {
+        state.pageSize = Number(event.target.value) || 10;
+        state.currentPage = 1;
+        renderTable();
+      });
+
+      populateFilters();
+      renderTable();
+    }
+
+    function initDashboard(rawData) {
+      const regionFilter = document.getElementById('region-filter');
+      const categoryFilter = document.getElementById('category-filter');
+      const channelFilter = document.getElementById('channel-filter');
+      if (!regionFilter || !categoryFilter || !channelFilter) return;
+
+      let dataset = [...rawData];
+      let barChart, lineChart, pieChart;
+
+      function populateFilters(data) {
+        const regions = [...new Set(data.map(d => d.Region))].sort();
+        const categories = [...new Set(data.map(d => d.Product_Category))].sort();
+        const channels = [...new Set(data.map(d => d.Sales_Channel))].sort();
+
+        regions.forEach(r => regionFilter.innerHTML += `<option value="${r}">${r}</option>`);
+        categories.forEach(c => categoryFilter.innerHTML += `<option value="${c}">${c}</option>`);
+        channels.forEach(c => channelFilter.innerHTML += `<option value="${c}">${c}</option>`);
+      }
+
+      function filterData() {
+        const region = regionFilter.value;
+        const category = categoryFilter.value;
+        const channel = channelFilter.value;
+        return rawData.filter(d => {
+          const regionMatch = region === 'All' || d.Region === region;
+          const categoryMatch = category === 'All' || d.Product_Category === category;
+          const channelMatch = channel === 'All' || d.Sales_Channel === channel;
+          return regionMatch && categoryMatch && channelMatch;
+        });
+      }
+
+      function calculateKPIs(data) {
+        let totalRevenue = 0;
+        let totalProfit = 0;
+        const totalOrders = data.length;
+        data.forEach(d => {
+          totalRevenue += d.Revenue || 0;
+          totalProfit += d.Profit || 0;
+        });
+        const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+        document.querySelector('#card-revenue .text-3xl').textContent = `$${totalRevenue.toFixed(0).toLocaleString()}`;
+        document.querySelector('#card-profit .text-3xl').textContent = `$${totalProfit.toFixed(0).toLocaleString()}`;
+        document.querySelector('#card-orders .text-3xl').textContent = totalOrders.toLocaleString();
+        document.querySelector('#card-margin .text-3xl').textContent = `${profitMargin.toFixed(1)}%`;
+      }
+
+      function aggregateRevenueByCountry(data) {
+        const map = data.reduce((acc, curr) => {
+          acc[curr.Country] = (acc[curr.Country] || 0) + curr.Revenue;
+          return acc;
+        }, {});
+        const sortedKeys = Object.keys(map).sort((a, b) => map[b] - map[a]);
+        return {
+          labels: sortedKeys,
+          data: sortedKeys.map(key => map[key])
+        };
+      }
+
+      function aggregateRevenueByCategory(data) {
+        const map = data.reduce((acc, curr) => {
+          acc[curr.Product_Category] = (acc[curr.Product_Category] || 0) + curr.Revenue;
+          return acc;
+        }, {});
+        const sortedKeys = Object.keys(map).sort((a, b) => map[b] - map[a]);
+        return {
+          labels: sortedKeys,
+          data: sortedKeys.map(key => map[key])
+        };
+      }
+
+      function aggregateDailyProfit(data) {
+        const map = data.reduce((acc, curr) => {
+          const date = curr.Order_Date;
+          acc[date] = (acc[date] || 0) + curr.Profit;
+          return acc;
+        }, {});
+        const sortedDates = Object.keys(map).sort((a, b) => new Date(a) - new Date(b));
+        return {
+          labels: sortedDates,
+          data: sortedDates.map(date => map[date])
+        };
+      }
+
+      function aggregateProfitHeatmap(data) {
+        const results = {};
+        const regions = [...new Set(data.map(d => d.Region))];
+        const channels = [...new Set(data.map(d => d.Sales_Channel))];
+
+        data.forEach(d => {
+          const key = `${d.Region}|${d.Sales_Channel}`;
+          if (!results[key]) {
+            results[key] = { totalProfit: 0, count: 0 };
+          }
+          results[key].totalProfit += d.Profit;
+          results[key].count += 1;
+        });
+
+        const heatmapData = {};
+        regions.forEach(r => {
+          heatmapData[r] = {};
+          channels.forEach(c => {
+            const key = `${r}|${c}`;
+            const entry = results[key];
+            heatmapData[r][c] = entry && entry.count ? entry.totalProfit / entry.count : 0;
+          });
+        });
+
+        return { heatmapData, regions, channels };
+      }
+
+      function updateBarChart(dataSet) {
+        const ctx = document.getElementById('bar-chart').getContext('2d');
+        if (barChart) barChart.destroy();
+        const colors = dataSet.labels.map((_, i) => `hsl(210, 70%, ${50 - (i * 3)}%)`);
+        barChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: dataSet.labels,
+            datasets: [{
+              label: 'Total Revenue ($)',
+              data: dataSet.data,
+              backgroundColor: colors,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: 'Revenue ($)' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      function updateLineChart(dataSet) {
+        const ctx = document.getElementById('line-chart').getContext('2d');
+        if (lineChart) lineChart.destroy();
+        lineChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: dataSet.labels,
+            datasets: [{
+              label: 'Daily Profit ($)',
+              data: dataSet.data,
+              borderColor: '#10B981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true,
+              pointRadius: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { type: 'time', time: { unit: 'day' }, title: { display: true, text: 'Order Date' } },
+              y: { beginAtZero: true, title: { display: true, text: 'Profit ($)' } }
+            }
+          }
+        });
+      }
+
+      function updatePieChart(dataSet) {
+        const ctx = document.getElementById('pie-chart').getContext('2d');
+        if (pieChart) pieChart.destroy();
+        const colors = ['#3B82F6', '#F59E0B', '#10B981', '#6366F1', '#EF4444'];
+        pieChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: dataSet.labels,
+            datasets: [{
+              data: dataSet.data,
+              backgroundColor: colors.slice(0, dataSet.labels.length),
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { font: { size: 10 } } },
+              title: { display: false }
+            }
+          }
+        });
+      }
+
+      function updateHeatmapTable(dataSet) {
+        const { heatmapData, regions, channels } = dataSet;
+        const tableContainer = document.getElementById('heatmap-table');
+        let tableHTML = '<table class="w-full border-collapse text-sm">';
+        let minProfit = Infinity;
+        let maxProfit = -Infinity;
+        Object.values(heatmapData).forEach(row => {
+          Object.values(row).forEach(avg => {
+            if (avg > 0) {
+              minProfit = Math.min(minProfit, avg);
+              maxProfit = Math.max(maxProfit, avg);
+            }
+          });
+        });
+
+        function getColor(value) {
+          if (value <= 0 || Number.isNaN(value)) return 'bg-gray-100 text-gray-500';
+          const range = maxProfit - minProfit || 1;
+          const intensity = (value - minProfit) / range;
+          const shade = 200 + Math.round(intensity * 500);
+          return `bg-red-${Math.min(700, Math.max(200, shade))} text-white font-semibold`;
+        }
+
+        tableHTML += '<thead><tr class="bg-gray-200 text-gray-700"><th class="p-2 border border-gray-300 text-left">Region</th>';
+        channels.forEach(c => {
+          tableHTML += `<th class="p-2 border border-gray-300 text-center">${c}</th>`;
+        });
+        tableHTML += '</tr></thead><tbody>';
+
+        regions.forEach(r => {
+          tableHTML += `<tr class="hover:bg-gray-50"><td class="p-2 border border-gray-300 font-medium">${r}</td>`;
+          channels.forEach(c => {
+            const avgProfit = heatmapData[r][c];
+            const colorClass = getColor(avgProfit);
+            const displayValue = avgProfit > 0 ? `$${avgProfit.toFixed(0)}` : '-';
+            tableHTML += `<td class="p-2 border border-gray-300 text-center ${colorClass}">${displayValue}</td>`;
+          });
+          tableHTML += '</tr>';
+        });
+
+        tableHTML += '</tbody></table>';
+        tableContainer.innerHTML = tableHTML;
+      }
+
+      function applyFilters() {
+        dataset = filterData();
+        calculateKPIs(dataset);
+        updateBarChart(aggregateRevenueByCountry(dataset));
+        updatePieChart(aggregateRevenueByCategory(dataset));
+        updateLineChart(aggregateDailyProfit(dataset));
+        updateHeatmapTable(aggregateProfitHeatmap(dataset));
+      }
+
+      populateFilters(rawData);
+      regionFilter.addEventListener('change', applyFilters);
+      categoryFilter.addEventListener('change', applyFilters);
+      channelFilter.addEventListener('change', applyFilters);
+      applyFilters();
+    }
+
+    function initVisualGalleryCharts() {
+      const barCtx = document.getElementById('gallery-bar');
+      const lineCtx = document.getElementById('gallery-line');
+      const pieCtx = document.getElementById('gallery-pie');
+      const metricCtx = document.getElementById('gallery-metric');
+      if (!barCtx || !lineCtx || !pieCtx || !metricCtx) return;
+
+      const baseColors = ['#6366F1', '#EC4899', '#10B981', '#F59E0B'];
+      const randomPulse = () => Array.from({ length: 4 }, () => Math.floor(Math.random() * 80) + 20);
+
+      let barChart, lineChart, pieChart, metricChart;
+
+      const createBar = () => new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: ['North', 'South', 'East', 'West'],
+          datasets: [{
+            data: randomPulse(),
+            backgroundColor: baseColors,
+            borderRadius: 8
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+      });
+
+      const createLine = () => new Chart(lineCtx, {
+        type: 'line',
+        data: {
+          labels: ['W1', 'W2', 'W3', 'W4'],
+          datasets: [{
+            data: randomPulse(),
+            borderColor: '#0EA5E9',
+            backgroundColor: 'rgba(14, 165, 233, 0.2)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+      });
+
+      const createPie = () => new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Online', 'Retail', 'Wholesale', 'Direct'],
+          datasets: [{ data: randomPulse(), backgroundColor: baseColors, borderWidth: 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+
+      const createMetric = () => new Chart(metricCtx, {
+        type: 'radar',
+        data: {
+          labels: ['Revenue', 'Profit', 'Conversion', 'AOV'],
+          datasets: [{
+            data: randomPulse(),
+            backgroundColor: 'rgba(99, 102, 241, 0.2)',
+            borderColor: '#6366F1',
+            pointBackgroundColor: '#6366F1'
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { beginAtZero: true, angleLines: { color: 'rgba(15, 23, 42, 0.1)' } } } }
+      });
+
+      const rebuild = (type) => {
+        if (type === 'bar' && barChart) { barChart.destroy(); barChart = createBar(); }
+        if (type === 'line' && lineChart) { lineChart.destroy(); lineChart = createLine(); }
+        if (type === 'pie' && pieChart) { pieChart.destroy(); pieChart = createPie(); }
+        if (type === 'metric' && metricChart) { metricChart.destroy(); metricChart = createMetric(); }
+      };
+
+      barChart = createBar();
+      lineChart = createLine();
+      pieChart = createPie();
+      metricChart = createMetric();
+
+      document.querySelectorAll('[data-trigger]').forEach(btn => {
+        btn.addEventListener('click', () => rebuild(btn.dataset.trigger));
+      });
+    }
+
+    function initReportBasicsCharts() {
+      const barCtx = document.getElementById('report-bar');
+      const controlsCtx = document.getElementById('report-controls');
+      if (!barCtx || !controlsCtx) return;
+
+      const palette = ['#4ADE80', '#2DD4BF', '#38BDF8', '#818CF8'];
+      const randomSpark = () => Array.from({ length: 5 }, () => Math.floor(Math.random() * 50) + 10);
+
+      let reportBar, reportControls;
+
+      const createReportBar = () => new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Home', 'Accessories', 'Apparel', 'Beauty', 'Gear'],
+          datasets: [{ data: randomSpark(), backgroundColor: palette, borderRadius: 6 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+      });
+
+      const createControls = () => new Chart(controlsCtx, {
+        type: 'line',
+        data: {
+          labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Q5'],
+          datasets: [{
+            data: randomSpark(),
+            borderColor: '#FB923C',
+            backgroundColor: 'rgba(251, 146, 60, 0.2)',
+            fill: true,
+            tension: 0.45,
+            pointRadius: 0
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+      });
+
+      const rebuild = (type) => {
+        if (type === 'report-bar' && reportBar) { reportBar.destroy(); reportBar = createReportBar(); }
+        if (type === 'report-controls' && reportControls) { reportControls.destroy(); reportControls = createControls(); }
+      };
+
+      reportBar = createReportBar();
+      reportControls = createControls();
+
+      document.querySelectorAll('[data-report-trigger]').forEach(btn => {
+        btn.addEventListener('click', () => rebuild(btn.dataset.reportTrigger));
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initSlideNavigation();
+      initPreview();
+      initProcessFlow();
+      const salesData = parseSalesCSV(SALES_CSV);
+      initDatasetLab(structuredCopy(salesData));
+      initDashboard(structuredCopy(salesData));
+      initVisualGalleryCharts();
+      initReportBasicsCharts();
+
+      const blueprintFacts = [
+        'Executive overview aggregates KPI trends with channel mix, highlighting variances over time.',
+        'Product & category cards expose attach rates, showing how accessories follow premium purchases.',
+        'Rep & channel operations surface conversion gaps so enablement can target low-performing routes.'
+      ];
+      const blueprintBtn = document.getElementById('blueprint-toggle');
+      const blueprintFact = document.getElementById('blueprint-fact');
+      if (blueprintBtn && blueprintFact) {
+        let blueprintIndex = 0;
+        const showFact = () => {
+          if (!blueprintFact.classList.contains('visible')) {
+            blueprintFact.classList.add('visible');
+          }
+          const line = document.createElement('div');
+          line.className = 'blueprint-line';
+          line.textContent = blueprintFacts[blueprintIndex];
+          blueprintFact.appendChild(line);
+          blueprintFact.scrollTop = blueprintFact.scrollHeight;
+          blueprintIndex = (blueprintIndex + 1) % blueprintFacts.length;
+        };
+        blueprintBtn.addEventListener('click', showFact);
+      }
+    });
+  </script>
+</body>
+</html>
