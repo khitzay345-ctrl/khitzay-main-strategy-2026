@@ -2,11 +2,6 @@
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<div id="chart-data-store" data-chart="{{ chart_data | default({'months': [], 'bob': [], 'self': [], 'cs': []}, true) | tojson }}"></div>
-<script>
-// Global chart data from attribute
-window.chartData = JSON.parse(document.getElementById('chart-data-store').dataset.chart);
-</script>
 <style>
 :root {
   --bob-bg: #050913;
@@ -15,6 +10,14 @@ window.chartData = JSON.parse(document.getElementById('chart-data-store').datase
   --bob-accent: #38bdf8;
   --bob-pink: #f472b6; 
   --bob-amber: #fbbf24;
+}
+
+table td {
+  text-align: center !important;
+}
+
+.text-right {
+  text-align: center !important;
 }
 
 .page-enter {
@@ -284,9 +287,15 @@ window.chartData = JSON.parse(document.getElementById('chart-data-store').datase
   });
 })();
 
-// Use global chartData
-const chartData = window.chartData || {};
+// Chart data
+const chartData = {
+  months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"],
+  bob: [26632830, 7165015, 18232080, 18139735, 34766800, 49741805, 34693005, 38324720, 50020630, 59322230, 41600670],
+  self: [158773915, 115003565, 138809105, 109373425, 149916034, 155411563, 95281845, 108600970, 109567485, 85328015, 74819565],
+  cs: [14, 6, 12, 14, 19, 24, 27, 26, 31, 41, 36]
+};
 
+// Orders Chart
 const ctxOrders = document.getElementById('ordersChart');
 if (ctxOrders) {
   new Chart(ctxOrders, {
@@ -331,6 +340,7 @@ if (ctxOrders) {
   });
 }
 
+// CS Chart
 const ctxCS = document.getElementById('csChart');
 if (ctxCS) {
   new Chart(ctxCS, {
@@ -358,4 +368,6 @@ if (ctxCS) {
   });
 }
 </script>
+{% endblock %}
+
 {% endblock %}

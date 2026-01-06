@@ -1545,6 +1545,7 @@ def bob_page():
         "bob order": "BOB Order",
         "bob": "BOB Order",
         "boborder": "BOB Order",
+        "BoB Order": "BOB Order",
         "self order": "Self Order",
         "self": "Self Order",
         "grand total": "Grand Total",
