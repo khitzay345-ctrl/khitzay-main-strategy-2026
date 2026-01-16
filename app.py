@@ -284,6 +284,10 @@ def ecom():
         target_insight=insight_text,
         comp_rows=[],
         comp_summary={},
+        realistic_2x_chart_data={"labels": [], "datasets": []},
+        realistic_2x_annual_goals=[],
+        realistic_2x_brands=[],
+        realistic_2x_months=[],
         title="E-commerce Performance"
     )
 
@@ -365,6 +369,10 @@ def ecom_comparison():
         target_insight="",
         comp_rows=records,
         comp_summary=comp_summary,
+        realistic_2x_chart_data={"labels": [], "datasets": []},
+        realistic_2x_annual_goals=[],
+        realistic_2x_brands=[],
+        realistic_2x_months=[],
         title="E-commerce Performance"
     )
 
