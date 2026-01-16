@@ -506,19 +506,32 @@ def ecom_realistic_2x():
                     summary["top_brand"] = top_brand
                     summary["top_brand_value"] = f"{brand_totals[top_brand]:,.0f}"
 
-    # Prepare chart data
+    # Prepare chart data with proper initialization
     chart_data = {
         "labels": [],
         "datasets": []
     }
     
-    # Prepare annual goals
+    # Prepare annual goals with proper initialization
     annual_goals = []
+    
+    # Ensure data is JSON serializable by converting any potential issues
+    def make_json_safe(obj):
+        """Convert object to JSON-safe format"""
+        if obj is None:
+            return []
+        if isinstance(obj, (list, tuple)):
+            return [make_json_safe(item) for item in obj]
+        if isinstance(obj, dict):
+            return {str(k): make_json_safe(v) for k, v in obj.items()}
+        if isinstance(obj, (str, int, float, bool)):
+            return obj
+        return str(obj)
     
     if not df.empty and len(df.columns) > 1:
         # Get month columns (exclude brand column)
         month_columns = [col for col in df.columns[1:] if col not in ['insight', 'total', 'grand']]
-        chart_data["labels"] = month_columns
+        chart_data["labels"] = make_json_safe(month_columns)
         
         # Get unique brands (exclude insight/total rows)
         brands = []
@@ -526,6 +539,9 @@ def ecom_realistic_2x():
             brand = str(row.get(df.columns[0], "")).strip()
             if brand and brand.lower() not in ['insight', 'total', 'grand', '']:
                 brands.append(brand)
+        
+        # Remove duplicates
+        brands = list(dict.fromkeys(brands))
         
         # Color palette for brands
         colors = [
@@ -557,7 +573,7 @@ def ecom_realistic_2x():
             
             chart_data["datasets"].append({
                 "label": brand,
-                "data": brand_data,
+                "data": make_json_safe(brand_data),
                 "borderColor": colors[i % len(colors)],
                 "backgroundColor": colors[i % len(colors)],
                 "borderWidth": 2,
@@ -574,6 +590,10 @@ def ecom_realistic_2x():
                 "current_formatted": f"{int(annual_total * 0.75):,.0f}",
                 "progress_percentage": 75  # Simulate 75% progress
             })
+    
+    # Ensure final data is JSON safe
+    chart_data = make_json_safe(chart_data)
+    annual_goals = make_json_safe(annual_goals)
 
     return render_template(
         "ecom.html",
