@@ -586,7 +586,7 @@
           <span>{{ goal.progress_percentage }}%</span>
         </div>
         <div class="progress-bar">
-          <div class="progress-fill" style="width: {{ goal.progress_percentage }}%"></div>
+          <div class="progress-fill" data-progress="{{ goal.progress_percentage }}"></div>
         </div>
       </div>
       {% endfor %}
@@ -689,18 +689,44 @@
   {% endif %}
 </div>
 
+<!-- Hidden data elements for JavaScript -->
+<div id="chart-data" style="display: none;">{{ realistic_2x_chart_data|tojson|safe }}</div>
+<div id="annual-goals-data" style="display: none;">{{ realistic_2x_annual_goals|tojson|safe }}</div>
+
 <!-- Chart.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-// Data from backend
-const chartData = {{ realistic_2x_chart_data|tojson|safe }};
-const annualGoals = {{ realistic_2x_annual_goals|tojson|safe }};
+// Data from backend - safely parse JSON
+let chartData = { labels: [], datasets: [] };
+let annualGoals = [];
+
+// Initialize data when page loads
+function initializeData() {
+    try {
+        const chartDataElement = document.getElementById('chart-data');
+        if (chartDataElement) {
+            chartData = JSON.parse(chartDataElement.textContent);
+        }
+    } catch(e) {
+        console.error('Error parsing chart data:', e);
+    }
+    
+    try {
+        const annualGoalsElement = document.getElementById('annual-goals-data');
+        if (annualGoalsElement) {
+            annualGoals = JSON.parse(annualGoalsElement.textContent);
+        }
+    } catch(e) {
+        console.error('Error parsing annual goals:', e);
+    }
+}
 
 let currentChart = null;
 
 // Initialize chart on page load
 document.addEventListener('DOMContentLoaded', function() {
+    initializeData();
     initializeChart();
     animateProgressBars();
 });
@@ -900,7 +926,8 @@ function updateTable() {
 function animateProgressBars() {
     const progressFills = document.querySelectorAll('.progress-fill');
     progressFills.forEach((fill, index) => {
-        const targetWidth = fill.style.width;
+        const progress = fill.getAttribute('data-progress');
+        const targetWidth = progress + '%';
         fill.style.width = '0%';
         setTimeout(() => {
             fill.style.width = targetWidth;
