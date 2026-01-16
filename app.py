@@ -369,8 +369,157 @@ def ecom_comparison():
     )
 
 
+@app.route("/ecom_realistic_2x")
+def ecom_realistic_2x():
+    try:
+        df = gs.sheet_to_df("2026_Realistic_2x")
+    except Exception as e:
+        print("Error loading sheet '2026_Realistic_2x':", e)
+        df = pd.DataFrame()
 
+    # normalize columns
+    if not df.empty:
+        df.columns = (
+            df.columns.astype(str)
+            .str.replace("\u00A0", " ", regex=False)
+            .str.replace("\t", " ", regex=False)
+            .str.replace("  ", " ", regex=False)
+            .str.strip()
+        )
 
+    # find insight row
+    insight_text = ""
+    if not df.empty:
+        first_col = df.columns[0]
+        mask = df[first_col].astype(str).str.strip().str.lower().str.contains(r"insight", na=False)
+        if mask.any():
+            insight_row = df[mask].iloc[0]
+            parts = []
+            for c in df.columns[1:]:
+                val = str(insight_row.get(c, "")) or ""
+                if val.strip():
+                    parts.append(val.strip())
+            insight_text = " ".join(parts).strip()
+        else:
+            # fallback: try last non-empty row with long text
+            long_text = ""
+            for i in range(len(df)-1, -1, -1):
+                row = df.iloc[i].astype(str).fillna("")
+                joined = " ".join([x for x in row.tolist() if x and x.strip()])
+                if len(joined) > 40 and not re.search(r"\d{3,}", joined):
+                    long_text = joined
+                    break
+            insight_text = long_text
+
+    # Format numeric columns and prepare data
+    formatted_rows = []
+    if not df.empty:
+        # Filter out insight rows from data
+        data_df = df[~df[first_col].astype(str).str.strip().str.lower().str.contains(r"insight", na=False)]
+        
+        for _, row in data_df.iterrows():
+            formatted_row = {}
+            for col in df.columns:
+                val = row.get(col, "")
+                if pd.isna(val):
+                    formatted_row[col] = ""
+                elif isinstance(val, (int, float)):
+                    formatted_row[col] = f"{val:,.0f}"
+                else:
+                    # Clean LaTeX math and format
+                    cleaned = clean_latex_math(str(val))
+                    # Try to detect and format numbers
+                    if re.match(r'^[\d,.-]+$', cleaned.replace(',', '')):
+                        try:
+                            num_val = float(cleaned.replace(',', ''))
+                            formatted_row[col] = f"{num_val:,.0f}"
+                        except:
+                            formatted_row[col] = cleaned
+                    else:
+                        formatted_row[col] = cleaned
+            formatted_rows.append(formatted_row)
+
+    # Calculate summary statistics
+    summary = {
+        "total_sales": "0",
+        "monthly_avg": "0", 
+        "best_month": "N/A",
+        "best_value": "0",
+        "lowest_month": "N/A",
+        "lowest_value": "0",
+        "top_brand": "N/A",
+        "top_brand_value": "0"
+    }
+    
+    if not df.empty and len(df.columns) > 1:
+        # Try to calculate statistics from the data
+        numeric_cols = []
+        for col in df.columns[1:]:  # Skip first column (usually brand names)
+            if df[col].dtype in ['int64', 'float64'] or any(
+                isinstance(x, (int, float)) for x in df[col].dropna().head()
+            ):
+                numeric_cols.append(col)
+        
+        if numeric_cols:
+            # Calculate totals for each numeric column
+            totals = {}
+            for col in numeric_cols:
+                col_total = 0
+                for val in df[col].dropna():
+                    if isinstance(val, str):
+                        val = clean_number(val)
+                    if val is not None:
+                        col_total += val
+                totals[col] = col_total
+            
+            if totals:
+                max_total = max(totals.values())
+                min_total = min(totals.values())
+                summary["total_sales"] = f"{max_total:,.0f}"
+                summary["monthly_avg"] = f"{max_total/12:,.0f}"
+                
+                # Find best and lowest months
+                for col, total in totals.items():
+                    if total == max_total:
+                        summary["best_month"] = col
+                        summary["best_value"] = f"{total:,.0f}"
+                    elif total == min_total:
+                        summary["lowest_month"] = col
+                        summary["lowest_value"] = f"{total:,.0f}"
+                
+                # Find top brand (sum across all months for each brand)
+                brand_totals = {}
+                for _, row in df.iterrows():
+                    brand = str(row.get(df.columns[0], "")).strip()
+                    if brand and brand.lower() not in ['insight', 'total', 'grand']:
+                        brand_total = 0
+                        for col in numeric_cols:
+                            val = row.get(col)
+                            if isinstance(val, str):
+                                val = clean_number(val)
+                            if val is not None:
+                                brand_total += val
+                        brand_totals[brand] = brand_totals.get(brand, 0) + brand_total
+                
+                if brand_totals:
+                    top_brand = max(brand_totals, key=brand_totals.get)
+                    summary["top_brand"] = top_brand
+                    summary["top_brand_value"] = f"{brand_totals[top_brand]:,.0f}"
+
+    return render_template(
+        "ecom.html",
+        active_tab="realistic_2x",
+        realistic_2x_columns=list(df.columns) if not df.empty else [],
+        realistic_2x_rows=formatted_rows,
+        realistic_2x_insight=insight_text,
+        realistic_2x_summary=summary,
+        target_columns=[],
+        target_rows=[],
+        target_insight="",
+        comp_rows=[],
+        comp_summary={},
+        title="E-commerce Performance - 2026 Realistic 2x"
+    )
 @app.route("/strategy_plan")
 def strategy_plan():
     try:

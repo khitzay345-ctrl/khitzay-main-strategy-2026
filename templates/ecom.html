@@ -40,6 +40,197 @@
 .stat-card small { font-size:.8rem; color:#64748b; }
 .delta-pill { padding:4px 10px; border-radius:999px; font-size:.75rem; background:rgba(15,185,129,.15); color:#0f8266; }
 .bad { background:rgba(229,72,72,.1); color:#c73737; }
+
+/* 2026 Realistic 2x Tab Styles */
+.realistic-stats-grid { 
+  display:grid; 
+  grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); 
+  gap:20px; 
+  margin-bottom:24px; 
+}
+.realistic-stat-card {
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 20px 40px rgba(102,126,234,.3);
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+  transform:translateY(0);
+  transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation:slideInUp 0.6s ease-out forwards;
+  opacity:0;
+}
+.realistic-stat-card:nth-child(1) { animation-delay:0.1s; }
+.realistic-stat-card:nth-child(2) { animation-delay:0.2s; }
+.realistic-stat-card:nth-child(3) { animation-delay:0.3s; }
+.realistic-stat-card:nth-child(4) { animation-delay:0.4s; }
+.realistic-stat-card:nth-child(5) { animation-delay:0.5s; }
+.realistic-stat-card:nth-child(6) { animation-delay:0.6s; }
+
+.realistic-stat-card:hover {
+  transform:translateY(-8px) scale(1.02);
+  box-shadow:0 25px 50px rgba(102,126,234,.4);
+}
+.realistic-stat-card::before {
+  content:'';
+  position:absolute;
+  top:-50%;
+  right:-50%;
+  width:200%;
+  height:200%;
+  background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);
+  animation:rotate 20s linear infinite;
+}
+.realistic-stat-card .stat-icon {
+  font-size:2.5rem;
+  margin-bottom:12px;
+  opacity:0.9;
+}
+.realistic-stat-card .stat-label {
+  font-size:0.85rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  opacity:0.9;
+  margin-bottom:8px;
+}
+.realistic-stat-card .stat-value {
+  font-size:2.2rem;
+  font-weight:800;
+  margin-bottom:4px;
+}
+.realistic-stat-card .stat-subtitle {
+  font-size:0.9rem;
+  opacity:0.8;
+}
+
+.realistic-table-card {
+  background:#fff;
+  border-radius:24px;
+  padding:28px;
+  box-shadow:0 30px 60px rgba(4,32,74,.12);
+  animation:fadeInScale 0.8s ease-out 0.7s both;
+}
+.realistic-table {
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+}
+.realistic-table thead th {
+  text-align:left;
+  text-transform:uppercase;
+  font-size:0.8rem;
+  letter-spacing:1.5px;
+  padding:16px 14px;
+  color:#4a5568;
+  border-bottom:3px solid #e2e8f0;
+  background:linear-gradient(135deg,#f7fafc,#edf2f7);
+  font-weight:700;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.realistic-table tbody td {
+  padding:16px 14px;
+  border-bottom:1px solid #f1f5f9;
+  transition:all 0.2s ease;
+}
+.realistic-table tbody tr {
+  transition:all 0.3s ease;
+  animation:slideInLeft 0.5s ease-out forwards;
+  opacity:0;
+}
+.realistic-table tbody tr:nth-child(1) { animation-delay:0.8s; }
+.realistic-table tbody tr:nth-child(2) { animation-delay:0.9s; }
+.realistic-table tbody tr:nth-child(3) { animation-delay:1.0s; }
+.realistic-table tbody tr:nth-child(4) { animation-delay:1.1s; }
+.realistic-table tbody tr:nth-child(5) { animation-delay:1.2s; }
+.realistic-table tbody tr:nth-child(6) { animation-delay:1.3s; }
+.realistic-table tbody tr:nth-child(7) { animation-delay:1.4s; }
+.realistic-table tbody tr:nth-child(8) { animation-delay:1.5s; }
+.realistic-table tbody tr:nth-child(9) { animation-delay:1.6s; }
+.realistic-table tbody tr:nth-child(10) { animation-delay:1.7s; }
+.realistic-table tbody tr:nth-child(11) { animation-delay:1.8s; }
+.realistic-table tbody tr:nth-child(12) { animation-delay:1.9s; }
+.realistic-table tbody tr:nth-child(13) { animation-delay:2.0s; }
+.realistic-table tbody tr:nth-child(14) { animation-delay:2.1s; }
+.realistic-table tbody tr:nth-child(15) { animation-delay:2.2s; }
+.realistic-table tbody tr:nth-child(16) { animation-delay:2.3s; }
+.realistic-table tbody tr:nth-child(17) { animation-delay:2.4s; }
+
+.realistic-table tbody tr:hover {
+  background:linear-gradient(90deg,#f0f9ff,#e0f2fe);
+  transform:scale(1.01);
+  box-shadow:0 4px 20px rgba(59,130,246,.1);
+}
+.realistic-table tbody tr:last-child td { border-bottom:none; }
+.brand-cell {
+  font-weight:600;
+  color:#2d3748;
+  position:relative;
+}
+.brand-cell::before {
+  content:'';
+  position:absolute;
+  left:-8px;
+  top:50%;
+  transform:translateY(-50%);
+  width:4px;
+  height:0;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  border-radius:2px;
+  transition:height 0.3s ease;
+}
+.realistic-table tbody tr:hover .brand-cell::before {
+  height:70%;
+}
+.sales-cell {
+  text-align:right;
+  font-weight:500;
+  color:#1a365d;
+  font-family:'Courier New', monospace;
+}
+.sales-cell.highlight {
+  background:linear-gradient(135deg,#48bb78,#38a169);
+  color:#fff;
+  border-radius:8px;
+  font-weight:700;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity:0;
+    transform:translateY(30px);
+  }
+  to {
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+@keyframes slideInLeft {
+  from {
+    opacity:0;
+    transform:translateX(-20px);
+  }
+  to {
+    opacity:1;
+    transform:translateX(0);
+  }
+}
+@keyframes fadeInScale {
+  from {
+    opacity:0;
+    transform:scale(0.95);
+  }
+  to {
+    opacity:1;
+    transform:scale(1);
+  }
+}
+@keyframes rotate {
+  from { transform:rotate(0deg); }
+  to { transform:rotate(360deg); }
+}
 </style>
 
 <div class="ecom-wrapper">
@@ -59,6 +250,9 @@
     </li>
     <li class="nav-item">
       <a class="nav-link {% if active_tab == 'comparison' %}active{% endif %}" href="/ecom_comp">2024 vs 2025 Comparison</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_tab == 'realistic_2x' %}active{% endif %}" href="/ecom_realistic_2x">2026 Realistic 2x</a>
     </li>
   </ul>
 
@@ -166,6 +360,89 @@
     {% endif %}
   
   </div>
+  {% endif %}
+
+  {% if active_tab == 'realistic_2x' %}
+  <!-- Statistics Cards -->
+  <div class="realistic-stats-grid">
+    <div class="realistic-stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-label">Total Sales Target</div>
+      <div class="stat-value">{{ realistic_2x_summary.total_sales|default('0') }}</div>
+      <div class="stat-subtitle">Annual Goal 2026</div>
+    </div>
+    <div class="realistic-stat-card">
+      <div class="stat-icon">📈</div>
+      <div class="stat-label">Monthly Average</div>
+      <div class="stat-value">{{ realistic_2x_summary.monthly_avg|default('0') }}</div>
+      <div class="stat-subtitle">Per Month Target</div>
+    </div>
+    <div class="realistic-stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-label">Best Month</div>
+      <div class="stat-value">{{ realistic_2x_summary.best_month|default('N/A') }}</div>
+      <div class="stat-subtitle">{{ realistic_2x_summary.best_value|default('0') }}</div>
+    </div>
+    <div class="realistic-stat-card">
+      <div class="stat-icon">📉</div>
+      <div class="stat-label">Lowest Month</div>
+      <div class="stat-value">{{ realistic_2x_summary.lowest_month|default('N/A') }}</div>
+      <div class="stat-subtitle">{{ realistic_2x_summary.lowest_value|default('0') }}</div>
+    </div>
+    <div class="realistic-stat-card">
+      <div class="stat-icon">🏆</div>
+      <div class="stat-label">Top Brand</div>
+      <div class="stat-value">{{ realistic_2x_summary.top_brand|default('N/A') }}</div>
+      <div class="stat-subtitle">{{ realistic_2x_summary.top_brand_value|default('0') }}</div>
+    </div>
+    <div class="realistic-stat-card">
+      <div class="stat-icon">🔄</div>
+      <div class="stat-label">Growth Factor</div>
+      <div class="stat-value">2.0x</div>
+      <div class="stat-subtitle">Realistic Target</div>
+    </div>
+  </div>
+
+  <!-- Sales Target Table -->
+  <div class="realistic-table-card">
+    {% if realistic_2x_columns and realistic_2x_rows %}
+    <div class="table-responsive">
+      <table class="realistic-table">
+        <thead>
+          <tr>
+            {% for c in realistic_2x_columns %}<th>{{ c }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in realistic_2x_rows %}
+          {% set first = r[realistic_2x_columns[0]]|lower %}
+          <tr class="{% if 'grand' in first or 'total' in first %}fw-bold{% endif %}">
+            {% for c in realistic_2x_columns %}
+              {% set val = r[c] %}
+              {% if loop.first %}
+                <td class="brand-cell">{{ val }}</td>
+              {% elif val is string and val.replace(',','').replace('.','').isdigit() %}
+                <td class="sales-cell {% if 'total' in first or 'grand' in first %}highlight{% endif %}">{{ val }}</td>
+              {% else %}
+                <td class="sales-cell">{{ val }}</td>
+              {% endif %}
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div>No data found for sheet <strong>2026_Realistic_2x</strong>.</div>
+    {% endif %}
+  </div>
+
+  {% if realistic_2x_insight %}
+  <div class="alert alert-info mt-3" style="border-radius:14px; background:linear-gradient(135deg,#667eea15,#764ba215); border:1px solid #667eea30;">
+    <strong style="color:#667eea;">💡 Strategic Insight</strong>
+    <div style="white-space:pre-wrap; margin-top:8px; color:#4a5568;">{{ realistic_2x_insight }}</div>
+  </div>
+  {% endif %}
   {% endif %}
 </div>
 
