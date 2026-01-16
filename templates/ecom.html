@@ -2,13 +2,20 @@
 {% block content %}
 
 <style>
+:root {
+  --dna-bg: #050914;
+  --dna-card: rgba(13, 21, 37, 0.72);
+  --dna-border: rgba(148, 163, 184, 0.3);
+  --dna-glow: rgba(59, 130, 246, 0.6);
+}
+
 .ecom-wrapper { max-width: 1200px; margin: 20px auto 28px; }
 .hero-card {
-  background: radial-gradient(circle at top left,#0b63ff,#04204a 70%);
+  background: radial-gradient(circle at top left,#3b82f6,#1d4ed8 70%);
   color:#fff;
   padding:22px 22px 18px;
   border-radius:22px;
-  box-shadow:0 24px 55px rgba(4,32,74,.4);
+  box-shadow:0 24px 55px rgba(2,6,23,0.4);
   margin-bottom:18px;
 }
 .hero-card h1 { margin:0; font-weight:800; letter-spacing:-0.05em; }
@@ -17,26 +24,26 @@
 .hero-chip{padding:0.2rem 0.6rem;border-radius:999px;border:1px solid rgba(191,219,254,0.7);font-size:.72rem;color:#e5e7eb;background:rgba(15,23,42,0.18);}  
 .nav-tabs { border:none; margin-bottom:18px; }
 .nav-tabs .nav-link { border:none; border-radius:999px; padding:10px 20px; font-weight:600; color:#4d5b6c; }
-.nav-tabs .nav-link.active { background:#0b63ff; color:#fff; box-shadow:0 10px 20px rgba(11,99,255,.25); }
-.table-card { background:#fff; border-radius:22px; padding:22px; box-shadow:0 25px 45px rgba(4,32,74,.09); }
+.nav-tabs .nav-link.active { background:#3b82f6; color:#fff; box-shadow:0 10px 20px rgba(59,130,246,.25); }
+.table-card { background:var(--dna-card); border-radius:22px; padding:22px; box-shadow:0 25px 45px rgba(2,6,23,.4); border:1px solid var(--dna-border); }
 .e-table { width:100%; border-collapse:separate; border-spacing:0; }
-.e-table thead th { text-align:left; text-transform:uppercase; font-size:.75rem; letter-spacing:1px; padding:14px 12px; color:#5b677a; border-bottom:2px solid #e9eef6; background:#f9fbff; }
-.e-table tbody td { padding:14px 12px; border-bottom:1px solid #f1f4fa; }
+.e-table thead th { text-align:left; text-transform:uppercase; font-size:.75rem; letter-spacing:1px; padding:14px 12px; color:#94a3b8; border-bottom:2px solid var(--dna-border); background:rgba(15,23,42,0.5); }
+.e-table tbody td { padding:14px 12px; border-bottom:1px solid var(--dna-border); color:#e2e8f0; }
 .e-table tbody tr:last-child td { border-bottom:none; }
-.e-table tbody tr:hover { background:linear-gradient(90deg,#fbfdff,#f3f7ff); }
+.e-table tbody tr:hover { background:linear-gradient(90deg,rgba(59,130,246,0.1),rgba(29,78,216,0.05)); }
 .stat-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); gap:18px; margin-bottom:20px; }
 .stat-card {
-  background:linear-gradient(135deg,#ffffff,#f3f7ff);
+  background:linear-gradient(135deg,var(--dna-card),rgba(15,23,42,0.8));
   border-radius:18px;
   padding:16px 16px 14px;
-  box-shadow:0 18px 38px rgba(4,32,74,.1);
+  box-shadow:0 18px 38px rgba(2,6,23,.4);
   display:flex;
   flex-direction:column;
   gap:2px;
-  border:1px solid rgba(148,163,184,0.3);
+  border:1px solid var(--dna-border);
 }
-.stat-card span { text-transform:uppercase; font-size:.72rem; letter-spacing:.5px; color:#7a879b; }
-.stat-card strong { font-size:1.6rem; color:#041a2d; }
+.stat-card span { text-transform:uppercase; font-size:.72rem; letter-spacing:.5px; color:#94a3b8; }
+.stat-card strong { font-size:1.6rem; color:#f1f5f9; }
 .stat-card small { font-size:.8rem; color:#64748b; }
 .delta-pill { padding:4px 10px; border-radius:999px; font-size:.75rem; background:rgba(15,185,129,.15); color:#0f8266; }
 .bad { background:rgba(229,72,72,.1); color:#c73737; }
@@ -49,10 +56,10 @@
   margin-bottom:24px; 
 }
 .realistic-stat-card {
-  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  background:linear-gradient(135deg,var(--dna-card),rgba(15,23,42,0.8));
   border-radius:20px;
   padding:20px;
-  box-shadow:0 20px 40px rgba(102,126,234,.3);
+  box-shadow:0 20px 40px rgba(2,6,23,.4);
   color:#fff;
   position:relative;
   overflow:hidden;
@@ -60,6 +67,7 @@
   transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation:slideInUp 0.6s ease-out forwards;
   opacity:0;
+  border:1px solid var(--dna-border);
 }
 .realistic-stat-card:nth-child(1) { animation-delay:0.1s; }
 .realistic-stat-card:nth-child(2) { animation-delay:0.2s; }
@@ -70,7 +78,7 @@
 
 .realistic-stat-card:hover {
   transform:translateY(-8px) scale(1.02);
-  box-shadow:0 25px 50px rgba(102,126,234,.4);
+  box-shadow:0 25px 50px rgba(2,6,23,.5);
 }
 .realistic-stat-card::before {
   content:'';
@@ -79,7 +87,7 @@
   right:-50%;
   width:200%;
   height:200%;
-  background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);
+  background:radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 70%);
   animation:rotate 20s linear infinite;
 }
 .realistic-stat-card .stat-icon {
@@ -105,11 +113,12 @@
 }
 
 .realistic-table-card {
-  background:#fff;
+  background:var(--dna-card);
   border-radius:24px;
   padding:28px;
-  box-shadow:0 30px 60px rgba(4,32,74,.12);
+  box-shadow:0 30px 60px rgba(2,6,23,.4);
   animation:fadeInScale 0.8s ease-out 0.7s both;
+  border:1px solid var(--dna-border);
 }
 .realistic-table {
   width:100%;
@@ -122,9 +131,9 @@
   font-size:0.8rem;
   letter-spacing:1.5px;
   padding:16px 14px;
-  color:#4a5568;
-  border-bottom:3px solid #e2e8f0;
-  background:linear-gradient(135deg,#f7fafc,#edf2f7);
+  color:#94a3b8;
+  border-bottom:3px solid var(--dna-border);
+  background:rgba(15,23,42,0.5);
   font-weight:700;
   position:sticky;
   top:0;
@@ -132,8 +141,9 @@
 }
 .realistic-table tbody td {
   padding:16px 14px;
-  border-bottom:1px solid #f1f5f9;
+  border-bottom:1px solid var(--dna-border);
   transition:all 0.2s ease;
+  color:#e2e8f0;
 }
 .realistic-table tbody tr {
   transition:all 0.3s ease;
@@ -159,14 +169,14 @@
 .realistic-table tbody tr:nth-child(17) { animation-delay:2.4s; }
 
 .realistic-table tbody tr:hover {
-  background:linear-gradient(90deg,#f0f9ff,#e0f2fe);
+  background:linear-gradient(90deg,rgba(59,130,246,0.1),rgba(29,78,216,0.05));
   transform:scale(1.01);
-  box-shadow:0 4px 20px rgba(59,130,246,.1);
+  box-shadow:0 4px 20px rgba(59,130,246,.2);
 }
 .realistic-table tbody tr:last-child td { border-bottom:none; }
 .brand-cell {
   font-weight:600;
-  color:#2d3748;
+  color:#f1f5f9;
   position:relative;
 }
 .brand-cell::before {
@@ -177,7 +187,7 @@
   transform:translateY(-50%);
   width:4px;
   height:0;
-  background:linear-gradient(135deg,#667eea,#764ba2);
+  background:linear-gradient(135deg,#3b82f6,#1d4ed8);
   border-radius:2px;
   transition:height 0.3s ease;
 }
@@ -187,11 +197,11 @@
 .sales-cell {
   text-align:right;
   font-weight:500;
-  color:#1a365d;
+  color:#e2e8f0;
   font-family:'Courier New', monospace;
 }
 .sales-cell.highlight {
-  background:linear-gradient(135deg,#48bb78,#38a169);
+  background:linear-gradient(135deg,#3b82f6,#1d4ed8);
   color:#fff;
   border-radius:8px;
   font-weight:700;
@@ -234,12 +244,13 @@
 
 /* Filter Controls Styles */
 .filter-section {
-  background:linear-gradient(135deg,#f8fafc,#f1f5f9);
+  background:linear-gradient(135deg,var(--dna-card),rgba(15,23,42,0.8));
   border-radius:20px;
   padding:24px;
   margin-bottom:24px;
-  box-shadow:0 10px 25px rgba(4,32,74,.08);
+  box-shadow:0 10px 25px rgba(2,6,23,.4);
   animation:slideInUp 0.6s ease-out 0.3s both;
+  border:1px solid var(--dna-border);
 }
 .filter-controls {
   display:grid;
@@ -255,27 +266,28 @@
 .filter-group label {
   font-size:0.85rem;
   font-weight:600;
-  color:#475569;
+  color:#94a3b8;
   text-transform:uppercase;
   letter-spacing:0.5px;
 }
 .filter-select {
   padding:12px 16px;
-  border:2px solid #e2e8f0;
+  border:2px solid var(--dna-border);
   border-radius:12px;
-  background:#fff;
+  background:var(--dna-card);
   font-size:0.95rem;
   transition:all 0.3s ease;
   cursor:pointer;
+  color:#e2e8f0;
 }
 .filter-select:hover {
-  border-color:#667eea;
-  box-shadow:0 4px 12px rgba(102,126,234,.15);
+  border-color:#3b82f6;
+  box-shadow:0 4px 12px rgba(59,130,246,.3);
 }
 .filter-select:focus {
   outline:none;
-  border-color:#667eea;
-  box-shadow:0 0 0 3px rgba(102,126,234,.1);
+  border-color:#3b82f6;
+  box-shadow:0 0 0 3px rgba(59,130,246,.2);
 }
 .filter-actions {
   display:flex;
@@ -292,32 +304,33 @@
   font-size:0.9rem;
 }
 .filter-btn-primary {
-  background:linear-gradient(135deg,#667eea,#764ba2);
+  background:linear-gradient(135deg,#3b82f6,#1d4ed8);
   color:#fff;
-  box-shadow:0 4px 15px rgba(102,126,234,.3);
+  box-shadow:0 4px 15px rgba(59,130,246,.4);
 }
 .filter-btn-primary:hover {
   transform:translateY(-2px);
-  box-shadow:0 6px 20px rgba(102,126,234,.4);
+  box-shadow:0 6px 20px rgba(59,130,246,.5);
 }
 .filter-btn-secondary {
-  background:#fff;
-  color:#64748b;
-  border:2px solid #e2e8f0;
+  background:var(--dna-card);
+  color:#94a3b8;
+  border:2px solid var(--dna-border);
 }
 .filter-btn-secondary:hover {
-  background:#f8fafc;
-  border-color:#cbd5e1;
+  background:rgba(15,23,42,0.9);
+  border-color:#3b82f6;
 }
 
 /* Chart Container */
 .chart-section {
-  background:#fff;
+  background:var(--dna-card);
   border-radius:24px;
   padding:28px;
-  box-shadow:0 30px 60px rgba(4,32,74,.12);
+  box-shadow:0 30px 60px rgba(2,6,23,.4);
   margin-bottom:24px;
   animation:fadeInScale 0.8s ease-out 1.0s both;
+  border:1px solid var(--dna-border);
 }
 .chart-header {
   display:flex;
@@ -328,7 +341,7 @@
 .chart-title {
   font-size:1.4rem;
   font-weight:700;
-  color:#1e293b;
+  color:#f1f5f9;
 }
 .chart-container {
   position:relative;
@@ -338,12 +351,13 @@
 
 /* Annual Totals Section */
 .annual-totals-section {
-  background:linear-gradient(135deg,#fff,#f8fafc);
+  background:linear-gradient(135deg,var(--dna-card),rgba(15,23,42,0.8));
   border-radius:20px;
   padding:24px;
   margin-bottom:24px;
-  box-shadow:0 20px 40px rgba(4,32,74,.1);
+  box-shadow:0 20px 40px rgba(2,6,23,.4);
   animation:slideInUp 0.6s ease-out 0.5s both;
+  border:1px solid var(--dna-border);
 }
 .totals-list {
   display:grid;
@@ -351,10 +365,10 @@
   gap:16px;
 }
 .total-item {
-  background:#fff;
+  background:var(--dna-card);
   border-radius:12px;
   padding:16px 20px;
-  border:1px solid #e2e8f0;
+  border:1px solid var(--dna-border);
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -369,22 +383,22 @@
   left:0;
   width:3px;
   height:100%;
-  background:linear-gradient(135deg,#667eea,#764ba2);
+  background:linear-gradient(135deg,#3b82f6,#1d4ed8);
 }
 .total-item:hover {
   transform:translateY(-2px);
-  box-shadow:0 8px 25px rgba(4,32,74,.12);
-  border-color:#667eea;
+  box-shadow:0 8px 25px rgba(2,6,23,.5);
+  border-color:#3b82f6;
 }
 .brand-name {
   font-size:1rem;
   font-weight:600;
-  color:#1e293b;
+  color:#f1f5f9;
 }
 .total-amount {
   font-size:1.2rem;
   font-weight:700;
-  color:#667eea;
+  color:#3b82f6;
   font-family:'Courier New', monospace;
 }
 </style>
@@ -568,9 +582,43 @@
     </div>
   </div>
 
+  <!-- Sales Target Table -->
+  <div class="realistic-table-card">
+    {% if realistic_2x_columns and realistic_2x_rows %}
+    <div class="table-responsive">
+      <table class="realistic-table">
+        <thead>
+          <tr>
+            {% for c in realistic_2x_columns %}<th>{{ c }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in realistic_2x_rows %}
+          {% set first = r[realistic_2x_columns[0]]|lower %}
+          <tr class="{% if 'grand' in first or 'total' in first %}fw-bold{% endif %}">
+            {% for c in realistic_2x_columns %}
+              {% set val = r[c] %}
+              {% if loop.first %}
+                <td class="brand-cell">{{ val }}</td>
+              {% elif val is string and val.replace(',','').replace('.','').isdigit() %}
+                <td class="sales-cell {% if 'total' in first or 'grand' in first %}highlight{% endif %}">{{ val }}</td>
+              {% else %}
+                <td class="sales-cell">{{ val }}</td>
+              {% endif %}
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div>No data found for sheet <strong>2026_Realistic_2x</strong>.</div>
+    {% endif %}
+  </div>
+
   <!-- Annual Totals List -->
   <div class="annual-totals-section">
-    <h2 style="font-size:1.3rem; font-weight:700; color:#1e293b; margin-bottom:20px;">Annual Totals by Brand</h2>
+    <h2 style="font-size:1.3rem; font-weight:700; color:#f1f5f9; margin-bottom:20px;">Annual Totals by Brand</h2>
     <div class="totals-list">
       {% for goal in realistic_2x_annual_goals %}
       <div class="total-item">
@@ -621,44 +669,10 @@
     </div>
   </div>
 
-  <!-- Sales Target Table -->
-  <div class="realistic-table-card">
-    {% if realistic_2x_columns and realistic_2x_rows %}
-    <div class="table-responsive">
-      <table class="realistic-table">
-        <thead>
-          <tr>
-            {% for c in realistic_2x_columns %}<th>{{ c }}</th>{% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in realistic_2x_rows %}
-          {% set first = r[realistic_2x_columns[0]]|lower %}
-          <tr class="{% if 'grand' in first or 'total' in first %}fw-bold{% endif %}">
-            {% for c in realistic_2x_columns %}
-              {% set val = r[c] %}
-              {% if loop.first %}
-                <td class="brand-cell">{{ val }}</td>
-              {% elif val is string and val.replace(',','').replace('.','').isdigit() %}
-                <td class="sales-cell {% if 'total' in first or 'grand' in first %}highlight{% endif %}">{{ val }}</td>
-              {% else %}
-                <td class="sales-cell">{{ val }}</td>
-              {% endif %}
-            {% endfor %}
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div>No data found for sheet <strong>2026_Realistic_2x</strong>.</div>
-    {% endif %}
-  </div>
-
   {% if realistic_2x_insight %}
-  <div class="alert alert-info mt-3" style="border-radius:14px; background:linear-gradient(135deg,#667eea15,#764ba215); border:1px solid #667eea30;">
-    <strong style="color:#667eea;">💡 Strategic Insight</strong>
-    <div style="white-space:pre-wrap; margin-top:8px; color:#4a5568;">{{ realistic_2x_insight }}</div>
+  <div class="alert alert-info mt-3" style="border-radius:14px; background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(29,78,216,0.15)); border:1px solid rgba(59,130,246,0.3);">
+    <strong style="color:#3b82f6;">💡 Strategic Insight</strong>
+    <div style="white-space:pre-wrap; margin-top:8px; color:#e2e8f0;">{{ realistic_2x_insight }}</div>
   </div>
   {% endif %}
   {% endif %}
