@@ -335,6 +335,58 @@
   height:400px;
   width:100%;
 }
+
+/* Annual Totals Section */
+.annual-totals-section {
+  background:linear-gradient(135deg,#fff,#f8fafc);
+  border-radius:20px;
+  padding:24px;
+  margin-bottom:24px;
+  box-shadow:0 20px 40px rgba(4,32,74,.1);
+  animation:slideInUp 0.6s ease-out 0.5s both;
+}
+.totals-list {
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  gap:16px;
+}
+.total-item {
+  background:#fff;
+  border-radius:12px;
+  padding:16px 20px;
+  border:1px solid #e2e8f0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  transition:all 0.3s ease;
+  position:relative;
+  overflow:hidden;
+}
+.total-item::before {
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  width:3px;
+  height:100%;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+}
+.total-item:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 25px rgba(4,32,74,.12);
+  border-color:#667eea;
+}
+.brand-name {
+  font-size:1rem;
+  font-weight:600;
+  color:#1e293b;
+}
+.total-amount {
+  font-size:1.2rem;
+  font-weight:700;
+  color:#667eea;
+  font-family:'Courier New', monospace;
+}
 </style>
 
 <div class="ecom-wrapper">
@@ -513,6 +565,19 @@
     </div>
     <div class="chart-container">
       <canvas id="performanceChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Annual Totals List -->
+  <div class="annual-totals-section">
+    <h2 style="font-size:1.3rem; font-weight:700; color:#1e293b; margin-bottom:20px;">Annual Totals by Brand</h2>
+    <div class="totals-list">
+      {% for goal in realistic_2x_annual_goals %}
+      <div class="total-item">
+        <div class="brand-name">{{ goal.brand }}</div>
+        <div class="total-amount">{{ goal.target_formatted }}</div>
+      </div>
+      {% endfor %}
     </div>
   </div>
 
