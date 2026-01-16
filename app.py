@@ -374,8 +374,14 @@ def ecom_realistic_2x():
     try:
         df = gs.sheet_to_df("2026_Realistic_2x")
     except Exception as e:
-        print("Error loading sheet '2026_Realistic_2x':", e)
-        df = pd.DataFrame()
+        print("Error loading sheet '2026_Realistic_2x' from Google Sheets:", e)
+        # Fallback to local Excel file
+        try:
+            df = read_local_excel_sheet("2026_Realistic_2x")
+            print("Successfully loaded '2026_Realistic_2x' from local Excel file")
+        except Exception as e2:
+            print("Error loading sheet '2026_Realistic_2x' from local Excel:", e2)
+            df = pd.DataFrame()
 
     # normalize columns
     if not df.empty:
