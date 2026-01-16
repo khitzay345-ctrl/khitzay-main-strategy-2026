@@ -506,6 +506,75 @@ def ecom_realistic_2x():
                     summary["top_brand"] = top_brand
                     summary["top_brand_value"] = f"{brand_totals[top_brand]:,.0f}"
 
+    # Prepare chart data
+    chart_data = {
+        "labels": [],
+        "datasets": []
+    }
+    
+    # Prepare annual goals
+    annual_goals = []
+    
+    if not df.empty and len(df.columns) > 1:
+        # Get month columns (exclude brand column)
+        month_columns = [col for col in df.columns[1:] if col not in ['insight', 'total', 'grand']]
+        chart_data["labels"] = month_columns
+        
+        # Get unique brands (exclude insight/total rows)
+        brands = []
+        for _, row in df.iterrows():
+            brand = str(row.get(df.columns[0], "")).strip()
+            if brand and brand.lower() not in ['insight', 'total', 'grand', '']:
+                brands.append(brand)
+        
+        # Color palette for brands
+        colors = [
+            'rgb(102, 126, 234)', 'rgb(118, 75, 162)', 'rgb(237, 100, 166)',
+            'rgb(255, 159, 64)', 'rgb(75, 192, 192)', 'rgb(54, 162, 235)',
+            'rgb(153, 102, 255)', 'rgb(255, 99, 132)', 'rgb(255, 206, 86)',
+            'rgb(231, 233, 237)', 'rgb(144, 237, 125)', 'rgb(247, 163, 92)',
+            'rgb(128, 133, 233)', 'rgb(171, 71, 188)', 'rgb(237, 117, 99)',
+            'rgb(95, 192, 138)', 'rgb(175, 122, 197)'
+        ]
+        
+        # Create datasets for each brand
+        for i, brand in enumerate(brands[:17]):  # Limit to 17 brands for visibility
+            brand_data = []
+            annual_total = 0
+            
+            for month_col in month_columns:
+                value = 0
+                for _, row in df.iterrows():
+                    if str(row.get(df.columns[0], "")).strip() == brand:
+                        val = row.get(month_col)
+                        if isinstance(val, str):
+                            val = clean_number(val)
+                        if val is not None:
+                            value = val
+                            break
+                brand_data.append(value)
+                annual_total += value
+            
+            chart_data["datasets"].append({
+                "label": brand,
+                "data": brand_data,
+                "borderColor": colors[i % len(colors)],
+                "backgroundColor": colors[i % len(colors)],
+                "borderWidth": 2,
+                "pointRadius": 4,
+                "pointHoverRadius": 6
+            })
+            
+            # Add annual goal
+            annual_goals.append({
+                "brand": brand,
+                "target": annual_total,
+                "target_formatted": f"{annual_total:,.0f}",
+                "current": annual_total * 0.75,  # Simulate current progress (75% of target)
+                "current_formatted": f"{int(annual_total * 0.75):,.0f}",
+                "progress_percentage": 75  # Simulate 75% progress
+            })
+
     return render_template(
         "ecom.html",
         active_tab="realistic_2x",
@@ -513,6 +582,10 @@ def ecom_realistic_2x():
         realistic_2x_rows=formatted_rows,
         realistic_2x_insight=insight_text,
         realistic_2x_summary=summary,
+        realistic_2x_chart_data=chart_data,
+        realistic_2x_annual_goals=annual_goals,
+        realistic_2x_brands=[goal["brand"] for goal in annual_goals],
+        realistic_2x_months=chart_data["labels"],
         target_columns=[],
         target_rows=[],
         target_insight="",
