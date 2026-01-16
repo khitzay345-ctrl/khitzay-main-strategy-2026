@@ -750,7 +750,8 @@ function initializeChart() {
                         padding: 15,
                         font: {
                             size: 12,
-                            weight: '600'
+                            weight: '600',
+                            color: '#ffffff'
                         }
                     }
                 },
@@ -787,9 +788,17 @@ function initializeChart() {
                     title: {
                         display: true,
                         text: 'Months',
+                        color: '#ffffff',
                         font: {
                             size: 14,
                             weight: '600'
+                        }
+                    },
+                    ticks: {
+                        color: '#ffffff',
+                        font: {
+                            size: 12,
+                            weight: '500'
                         }
                     },
                     grid: {
@@ -801,12 +810,18 @@ function initializeChart() {
                     title: {
                         display: true,
                         text: 'Sales Target',
+                        color: '#ffffff',
                         font: {
                             size: 14,
                             weight: '600'
                         }
                     },
                     ticks: {
+                        color: '#ffffff',
+                        font: {
+                            size: 12,
+                            weight: '500'
+                        },
                         callback: function(value) {
                             return new Intl.NumberFormat('en-US', { 
                                 style: 'currency', 
@@ -817,7 +832,7 @@ function initializeChart() {
                         }
                     },
                     grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
+                        color: 'rgba(255, 255, 255, 0.1)'
                     }
                 }
             },
