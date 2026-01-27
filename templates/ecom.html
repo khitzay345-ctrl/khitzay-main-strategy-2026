@@ -201,9 +201,21 @@
   font-family:'Courier New', monospace;
 }
 .sales-cell.highlight {
-  background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+  background:linear-gradient(135deg,#1e3a8a,#1e40af);
   color:#fff;
   border-radius:8px;
+  font-weight:700;
+}
+.total-row {
+  background:linear-gradient(135deg,#1e3a8a,#1e40af);
+  color:#fff;
+}
+.total-row .brand-cell {
+  color:#fff;
+  font-weight:700;
+}
+.total-row .sales-cell {
+  color:#fff;
   font-weight:700;
 }
 
@@ -595,7 +607,7 @@
         <tbody>
           {% for r in realistic_2x_rows %}
           {% set first = r[realistic_2x_columns[0]]|lower %}
-          <tr class="{% if 'grand' in first or 'total' in first %}fw-bold{% endif %}">
+          <tr class="{% if 'grand' in first or 'total' in first %}fw-bold{% endif %} {% if first == 'total' %}total-row{% endif %}">
             {% for c in realistic_2x_columns %}
               {% set val = r[c] %}
               {% if loop.first %}
@@ -626,46 +638,6 @@
         <div class="total-amount">{{ goal.target_formatted }}</div>
       </div>
       {% endfor %}
-    </div>
-  </div>
-
-  <!-- Statistics Cards -->
-  <div class="realistic-stats-grid">
-    <div class="realistic-stat-card">
-      <div class="stat-icon">📊</div>
-      <div class="stat-label">Total Sales Target</div>
-      <div class="stat-value">{{ realistic_2x_summary.total_sales|default('0') }}</div>
-      <div class="stat-subtitle">Annual Goal 2026</div>
-    </div>
-    <div class="realistic-stat-card">
-      <div class="stat-icon">📈</div>
-      <div class="stat-label">Monthly Average</div>
-      <div class="stat-value">{{ realistic_2x_summary.monthly_avg|default('0') }}</div>
-      <div class="stat-subtitle">Per Month Target</div>
-    </div>
-    <div class="realistic-stat-card">
-      <div class="stat-icon">🎯</div>
-      <div class="stat-label">Best Month</div>
-      <div class="stat-value">{{ realistic_2x_summary.best_month|default('N/A') }}</div>
-      <div class="stat-subtitle">{{ realistic_2x_summary.best_value|default('0') }}</div>
-    </div>
-    <div class="realistic-stat-card">
-      <div class="stat-icon">📉</div>
-      <div class="stat-label">Lowest Month</div>
-      <div class="stat-value">{{ realistic_2x_summary.lowest_month|default('N/A') }}</div>
-      <div class="stat-subtitle">{{ realistic_2x_summary.lowest_value|default('0') }}</div>
-    </div>
-    <div class="realistic-stat-card">
-      <div class="stat-icon">🏆</div>
-      <div class="stat-label">Top Brand</div>
-      <div class="stat-value">{{ realistic_2x_summary.top_brand|default('N/A') }}</div>
-      <div class="stat-subtitle">{{ realistic_2x_summary.top_brand_value|default('0') }}</div>
-    </div>
-    <div class="realistic-stat-card">
-      <div class="stat-icon">🔄</div>
-      <div class="stat-label">Growth Factor</div>
-      <div class="stat-value">2.0x</div>
-      <div class="stat-subtitle">Realistic Target</div>
     </div>
   </div>
 

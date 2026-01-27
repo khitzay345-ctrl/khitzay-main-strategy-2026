@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template, abort
+from flask import Flask, render_template, abort, session, redirect, url_for, request
 import plotly.express as px
 import plotly
 import json
@@ -7,7 +7,6 @@ import re
 from collections import defaultdict
 from collections import OrderedDict
 from collections import Counter
-from flask import redirect, url_for
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 import pandas as pd
@@ -15,6 +14,17 @@ import pandas as pd
 from services import google_sheets as gs
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+app.secret_key = 'kz-strategy-secret-key-2026'
+
+# ===== AUTHENTICATION DECORATOR =====
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("authenticated"):
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # ===== HELPER FUNCTIONS (PLACE AT TOP) =====
 
@@ -453,6 +463,26 @@ def ecom_realistic_2x():
                         formatted_row[col] = cleaned
             formatted_rows.append(formatted_row)
 
+    # Calculate and add total row
+    if not df.empty and len(df.columns) > 1:
+        # Calculate totals for each month column
+        total_row = {}
+        total_row[df.columns[0]] = "Total"  # Set first column to "Total"
+        
+        for col in df.columns[1:]:  # Skip first column (brand names)
+            col_total = 0
+            for _, row in data_df.iterrows():
+                val = row.get(col, "")
+                if val and not pd.isna(val):
+                    # Clean and convert to number
+                    if isinstance(val, str):
+                        val = clean_number(val)
+                    if val is not None:
+                        col_total += val
+            total_row[col] = f"{col_total:,.0f}"
+        
+        formatted_rows.append(total_row)
+
     # Calculate summary statistics
     summary = {
         "total_sales": "0",
@@ -608,6 +638,12 @@ def ecom_realistic_2x():
     # Ensure final data is JSON safe
     chart_data = make_json_safe(chart_data)
     annual_goals = make_json_safe(annual_goals)
+
+    # Debug: Print the data to see what we're working with
+    print(f"DEBUG: realistic_2x_rows count: {len(formatted_rows)}")
+    if formatted_rows:
+        print(f"DEBUG: First few rows: {formatted_rows[:3]}")
+        print(f"DEBUG: Column names: {list(df.columns) if not df.empty else []}")
 
     return render_template(
         "ecom.html",
@@ -787,16 +823,31 @@ def org_structure():
 
 import pandas as pd
 from urllib.parse import quote # Added to handle spaces and special characters in URLs
+@app.route("/")
+def login():
+    return render_template("login.html")
+
+@app.route("/login", methods=["POST"])
+def authenticate():
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "")
+
+    if username == "KZ-strategy" and password == "kz2026resolution":
+        session["authenticated"] = True
+        session["username"] = username
+        return redirect(url_for("home_page"))
+    else:
+        return redirect(url_for("login") + "?error=1")
 
 @app.route("/home")
+@login_required
 def home_page():
     return render_template("home.html")
 
-# ===== ROUTES =====
-@app.route("/")
-def index():
-    return redirect(url_for("home_page"))
-
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 @app.route("/executive_summary")
 def executive_summary_page():
